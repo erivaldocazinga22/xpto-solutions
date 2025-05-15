@@ -85,12 +85,12 @@ void ListarEmpresas() {
 void ApagarEmpresa() {
   printf("\n============ APAGAR EMPRESA =============\n");
   int optionId;
-  printf("Digite o id do Empresa: ");
+  printf("Digite o id da Empresa: ");
   scanf("%d", &optionId);
 
   FILE *arq = fopen("empresas.txt", "r");
   if (arq == NULL) {
-    printf("Erro ao abrir o ficheiro.\n");
+    printf("Erro ao abrir o ficheiro de empresas.\n");
     return;
   }
 
@@ -105,6 +105,8 @@ void ApagarEmpresa() {
   char nome[100], tipo[100], contacto[200];
   int encontrado = 0;
 
+  // Lê todas as empresas, e escreve no ficheiro temporário apenas as que não
+  // forem a ser apagadas
   while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, tipo,
                 contacto) == 4) {
     if (id != optionId) {
@@ -117,13 +119,43 @@ void ApagarEmpresa() {
   fclose(arq);
   fclose(temp);
 
-  if (encontrado) {
-    remove("empresas.txt");             // Apaga o antigo
-    rename("temp.txt", "empresas.txt"); // Renomeia o novo
-    printf("Funcionário com ID %d apagado com sucesso.\n", optionId);
+  if (!encontrado) {
+    remove("temp.txt");
+    printf("Empresa com ID %d não encontrada.\n", optionId);
+    return;
+  }
+
+  // Substituir ficheiro de empresas
+  remove("empresas.txt");
+  rename("temp.txt", "empresas.txt");
+  printf("Empresa com ID %d apagada com sucesso.\n", optionId);
+
+  // Agora apagar referências a essa empresa em operacoes.txt
+  FILE *operacoes = fopen("operacoes.txt", "r");
+  FILE *tempOperacoes = fopen("temp_operacoes.txt", "w");
+  if (operacoes && tempOperacoes) {
+    int idOperacao, idFuncionario, idEmpresa;
+    char tipoOperacao[100], descricao[200];
+
+    while (fscanf(operacoes, "%d;%d;%d;%99[^;];%199[^\n]\n", &idOperacao,
+                  &idFuncionario, &idEmpresa, tipoOperacao, descricao) == 5) {
+      if (idEmpresa != optionId) {
+        fprintf(tempOperacoes, "%d;%d;%d;%s;%s\n", idOperacao, idFuncionario,
+                idEmpresa, tipoOperacao, descricao);
+      }
+    }
+
+    fclose(operacoes);
+    fclose(tempOperacoes);
+    remove("operacoes.txt");
+    rename("temp_operacoes.txt", "operacoes.txt");
+    printf("Operações associadas à empresa foram removidas.\n");
   } else {
-    remove("temp.txt"); // Não encontrado, apaga temp
-    printf("Funcionário com ID %d não encontrado.\n", optionId);
+    if (operacoes)
+      fclose(operacoes);
+    if (tempOperacoes)
+      fclose(tempOperacoes);
+    printf("Aviso: Não foi possível atualizar o ficheiro de operações.\n");
   }
 }
 

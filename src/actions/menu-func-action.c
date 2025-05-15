@@ -2,21 +2,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+/*
+ * int obterProximoFuncId() - Função que verifica o ultimo id e incrementa
+ *
+ */
 int obterProximoFuncId() {
-  FILE *arq = fopen("funcionario.txt", "r");
-  if (arq == NULL) {
+  FILE *arq = fopen("funcionario.txt", "r"); // Ler o arquivo
+  if (arq == NULL)
     return 1;
-  }
 
   int ultimoId = 0;
   char linha[512];
   while (fgets(linha, sizeof(linha), arq) != NULL) {
     int idTemp;
     if (sscanf(linha, "%d;", &idTemp) == 1) {
-      if (idTemp > ultimoId) {
+      if (idTemp > ultimoId)
         ultimoId = idTemp;
-      }
     }
   }
 
@@ -88,9 +89,10 @@ void ApagarFuncionario() {
   printf("Digite o id do funcionario: ");
   scanf("%d", &optionId);
 
+  // Abrir o ficheiro original de funcionários
   FILE *arq = fopen("funcionario.txt", "r");
   if (arq == NULL) {
-    printf("Erro ao abrir o ficheiro.\n");
+    printf("Erro ao abrir o ficheiro de funcionários.\n");
     return;
   }
 
@@ -105,6 +107,7 @@ void ApagarFuncionario() {
   char nome[100], funcao[100], descricao[200];
   int encontrado = 0;
 
+  // Ler e filtrar funcionários
   while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, funcao,
                 descricao) == 4) {
     if (id != optionId) {
@@ -117,14 +120,72 @@ void ApagarFuncionario() {
   fclose(arq);
   fclose(temp);
 
-  if (encontrado) {
-    remove("funcionario.txt");             // Apaga o antigo
-    rename("temp.txt", "funcionario.txt"); // Renomeia o novo
-    printf("Funcionário com ID %d apagado com sucesso.\n", optionId);
-  } else {
-    remove("temp.txt"); // Não encontrado, apaga temp
+  if (!encontrado) {
+    remove("temp.txt");
     printf("Funcionário com ID %d não encontrado.\n", optionId);
+    return;
   }
+
+  // Substituir ficheiro original
+  remove("funcionario.txt");
+  rename("temp.txt", "funcionario.txt");
+  printf("Funcionário com ID %d apagado com sucesso.\n", optionId);
+
+  // === Remover de posto-de-trabalho.txt ===
+  FILE *postos = fopen("posto-de-trabalho.txt", "r");
+  FILE *tempPostos = fopen("temp_postos.txt", "w");
+  if (postos && tempPostos) {
+    int idPosto, idFuncionario;
+    char cargo[100], local[100], area[100], descPosto[200];
+
+    while (fscanf(postos, "%d;%d;%99[^;];%99[^;];%99[^;];%199[^\n]\n", &idPosto,
+                  &idFuncionario, cargo, local, area, descPosto) == 6) {
+      if (idFuncionario != optionId) {
+        fprintf(tempPostos, "%d;%d;%s;%s;%s;%s\n", idPosto, idFuncionario,
+                cargo, local, area, descPosto);
+      }
+    }
+    fclose(postos);
+    fclose(tempPostos);
+    remove("posto-de-trabalho.txt");
+    rename("temp_postos.txt", "posto-de-trabalho.txt");
+  } else {
+    if (postos)
+      fclose(postos);
+    if (tempPostos)
+      fclose(tempPostos);
+    printf("Aviso: Não foi possível atualizar o ficheiro de postos de "
+           "trabalho.\n");
+  }
+
+  // === Remover de operacoes.txt ===
+  FILE *operacoes = fopen("operacoes.txt", "r");
+  FILE *tempOperacoes = fopen("temp_operacoes.txt", "w");
+  if (operacoes && tempOperacoes) {
+    int idOperacao, idFuncionario;
+    char tipoOperacao[100], descricaoOperacao[200];
+
+    while (fscanf(operacoes, "%d;%d;%99[^;];%199[^\n]\n", &idOperacao,
+                  &idFuncionario, tipoOperacao, descricaoOperacao) == 4) {
+      if (idFuncionario != optionId) {
+        fprintf(tempOperacoes, "%d;%d;%s;%s\n", idOperacao, idFuncionario,
+                tipoOperacao, descricaoOperacao);
+      }
+    }
+    fclose(operacoes);
+    fclose(tempOperacoes);
+    remove("operacoes.txt");
+    rename("temp_operacoes.txt", "operacoes.txt");
+  } else {
+    if (operacoes)
+      fclose(operacoes);
+    if (tempOperacoes)
+      fclose(tempOperacoes);
+    printf("Aviso: Não foi possível atualizar o ficheiro de operações.\n");
+  }
+
+  printf("Referências ao funcionário foram removidas dos ficheiros "
+         "relacionados.\n");
 }
 
 void AlterarFuncionario() {
