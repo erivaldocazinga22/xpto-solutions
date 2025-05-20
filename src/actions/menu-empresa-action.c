@@ -1,10 +1,13 @@
 #include "../include/structs.h"
+#include <ctype.h> // Para poder usar a funcao de verificacao se é um digito <isdigit()>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define FILE_NAME "empresas.txt"
+
 int obterProximoEmpresaId() {
-  FILE *arq = fopen("empresas.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     return 1;
   }
@@ -25,7 +28,7 @@ int obterProximoEmpresaId() {
 }
 
 void salvarEmpresa(Empresa novaEmpresa) {
-  FILE *arq = fopen("empresas.txt", "a");
+  FILE *arq = fopen(FILE_NAME, "a");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
@@ -42,27 +45,73 @@ void InserirEmpresa() {
   printf("\n============ INSERIR EMPRESA =============\n");
   Empresa novaEmpresa;
 
-  getchar();
+  getchar(); // limpar buffer
 
   printf("Nome: ");
   fgets(novaEmpresa.nome, sizeof(novaEmpresa.nome), stdin);
-  strtok(novaEmpresa.nome, "\n");
+  strtok(novaEmpresa.nome, "\n"); // remover \n
 
-  printf("Tipo: ");
-  fgets(novaEmpresa.tipo, sizeof(novaEmpresa.tipo), stdin);
-  strtok(novaEmpresa.tipo, "\n");
+  int optionSelected = -1;
 
-  printf("Contancto: ");
-  fgets(novaEmpresa.contacto, sizeof(novaEmpresa.contacto), stdin);
-  strtok(novaEmpresa.contacto, "\n");
+  // Pedir tipo de empresa até o utilizador inserir uma opção válida
+  while (optionSelected < 1 || optionSelected > 4) {
+    printf("\n------ Menu tipo de empresa ------\n");
+    printf("1. Fornecedor\n");
+    printf("2. Fabricante\n");
+    printf("3. Reciclagem\n");
+    printf("4. Agência\n");
+
+    printf("Escolha um tipo (1-4): ");
+    scanf("%d", &optionSelected);
+    getchar(); // limpar \n
+
+    switch (optionSelected) {
+    case 1:
+      strcpy(novaEmpresa.tipo, "Fornecedor");
+      break;
+    case 2:
+      strcpy(novaEmpresa.tipo, "Fabricante");
+      break;
+    case 3:
+      strcpy(novaEmpresa.tipo, "Reciclagem");
+      break;
+    case 4:
+      strcpy(novaEmpresa.tipo, "Agência");
+      break;
+    default:
+      printf("Opção inválida! Tente novamente.\n");
+      break;
+    }
+  }
+
+  int contactoValido = 0;
+  while (!contactoValido) {
+    printf("Contacto (9 dígitos): ");
+    fgets(novaEmpresa.contacto, sizeof(novaEmpresa.contacto), stdin);
+    strtok(novaEmpresa.contacto, "\n");
+
+    if (strlen(novaEmpresa.contacto) != 9) {
+      printf("Contacto inválido! Deve conter exatamente 9 dígitos.\n");
+      continue;
+    }
+
+    contactoValido = 1;
+    for (int i = 0; i < 9; i++) {
+      if (!isdigit(novaEmpresa.contacto[i])) {
+        printf("Contacto inválido! Deve conter apenas números.\n");
+        contactoValido = 0;
+        break;
+      }
+    }
+  }
 
   salvarEmpresa(novaEmpresa);
 }
 
 void ListarEmpresas() {
-  FILE *arq = fopen("empresas.txt", "r");
-  if (arq == NULL) {
-    printf("Erro ao abrir o ficheiro.\n");
+  FILE *arq = fopen(FILE_NAME, "r");
+  if (!arq) {
+    printf("Erro ao abrir o ficheiro de empresas.\n");
     return;
   }
 
@@ -71,6 +120,7 @@ void ListarEmpresas() {
   int id;
   char nome[100], tipo[100], contacto[200];
   int encontrou = 0;
+
   while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, tipo,
                 contacto) == 4) {
     printf("\nID: %d\n", id);
@@ -81,25 +131,32 @@ void ListarEmpresas() {
   }
 
   if (!encontrou) {
-    printf("\nNenhuma empresa encontrada.\n");
+    printf("\nNenhuma empresa registada no sistema.\n");
   }
+
   fclose(arq);
 }
 
 void ApagarEmpresa() {
   printf("\n============ APAGAR EMPRESA =============\n");
   int optionId;
-  printf("Digite o id da Empresa: ");
-  scanf("%d", &optionId);
 
-  FILE *arq = fopen("empresas.txt", "r");
-  if (arq == NULL) {
+  printf("Digite o ID da empresa: ");
+  if (scanf("%d", &optionId) != 1) {
+    printf("Entrada inválida. ID deve ser numérico.\n");
+    while (getchar() != '\n')
+      ; // limpar buffer
+    return;
+  }
+
+  FILE *arq = fopen(FILE_NAME, "r");
+  if (!arq) {
     printf("Erro ao abrir o ficheiro de empresas.\n");
     return;
   }
 
   FILE *temp = fopen("temp.txt", "w");
-  if (temp == NULL) {
+  if (!temp) {
     printf("Erro ao criar o ficheiro temporário.\n");
     fclose(arq);
     return;
@@ -109,8 +166,7 @@ void ApagarEmpresa() {
   char nome[100], tipo[100], contacto[200];
   int encontrado = 0;
 
-  // Lê todas as empresas, e escreve no ficheiro temporário apenas as que não
-  // forem a ser apagadas
+  // Copia tudo para temp, excepto a empresa a ser removida
   while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, tipo,
                 contacto) == 4) {
     if (id != optionId) {
@@ -129,14 +185,15 @@ void ApagarEmpresa() {
     return;
   }
 
-  // Substituir ficheiro de empresas
-  remove("empresas.txt");
-  rename("temp.txt", "empresas.txt");
+  // Substitui o ficheiro original
+  remove(FILE_NAME);
+  rename("temp.txt", FILE_NAME);
   printf("Empresa com ID %d apagada com sucesso.\n", optionId);
 
-  // Agora apagar referências a essa empresa em operacoes.txt
+  // Apaga operações associadas
   FILE *operacoes = fopen("operacoes.txt", "r");
   FILE *tempOperacoes = fopen("temp_operacoes.txt", "w");
+  int operacao_encontrada = 0;
   if (operacoes && tempOperacoes) {
     int idOperacao, idFuncionario, idEmpresa;
     char tipoOperacao[100], descricao[200];
@@ -154,12 +211,16 @@ void ApagarEmpresa() {
     remove("operacoes.txt");
     rename("temp_operacoes.txt", "operacoes.txt");
     printf("Operações associadas à empresa foram removidas.\n");
+    operacao_encontrada = 1;
   } else {
     if (operacoes)
       fclose(operacoes);
     if (tempOperacoes)
       fclose(tempOperacoes);
-    printf("Aviso: Não foi possível atualizar o ficheiro de operações.\n");
+
+    if (operacao_encontrada)
+      printf("Referências a empresa foram removidas dos ficheiros "
+             "relacionados.\n");
   }
 }
 
@@ -170,7 +231,7 @@ void AlterarEmpresa() {
   scanf("%d", &optionId);
   getchar(); // limpar o \n que fica no buffer
 
-  FILE *arq = fopen("empresas.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
@@ -190,23 +251,92 @@ void AlterarEmpresa() {
   while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, tipo,
                 contacto) == 4) {
     if (id == optionId) {
-      Empresa novoEmpresa;
-
-      printf("\nNovo nome: ");
-      fgets(novoEmpresa.nome, sizeof(novoEmpresa.nome), stdin);
-      strtok(novoEmpresa.nome, "\n"); // remove \n
-
-      printf("Novo Tipo: ");
-      fgets(novoEmpresa.tipo, sizeof(novoEmpresa.tipo), stdin);
-      strtok(novoEmpresa.tipo, "\n");
-
-      printf("Novo contacto: ");
-      fgets(novoEmpresa.contacto, sizeof(novoEmpresa.contacto), stdin);
-      strtok(novoEmpresa.contacto, "\n");
-
-      fprintf(temp, "%d;%s;%s;%s\n", id, novoEmpresa.nome, novoEmpresa.tipo,
-              novoEmpresa.contacto);
       encontrado = 1;
+
+      int opcao;
+      char novoNome[100], novoTipo[100], novoContacto[200];
+      strcpy(novoNome, nome);
+      strcpy(novoTipo, tipo);
+      strcpy(novoContacto, contacto);
+
+      do {
+        printf("\n--- O que deseja alterar? ---\n");
+        printf("1. Alterar Nome\n");
+        printf("2. Alterar Tipo\n");
+        printf("3. Alterar Contacto\n");
+        printf("4. Alterar Todos os campos\n");
+        printf("0. Confirmar e guardar alterações\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+        getchar(); // limpar \n
+
+        switch (opcao) {
+        case 1:
+          printf("Novo nome: ");
+          fgets(novoNome, sizeof(novoNome), stdin);
+          strtok(novoNome, "\n");
+          break;
+        case 2: {
+          int optionSelected = -1;
+
+          // Pedir tipo de empresa até o utilizador inserir uma opção válida
+          while (optionSelected < 1 || optionSelected > 4) {
+            printf("\n------ Menu tipo de empresa ------\n");
+            printf("1. Fornecedor\n");
+            printf("2. Fabricante\n");
+            printf("3. Reciclagem\n");
+            printf("4. Agência\n");
+
+            printf("Escolha um tipo (1-4): ");
+            scanf("%d", &optionSelected);
+            getchar(); // limpar \n
+
+            switch (optionSelected) {
+            case 1:
+              strcpy(novoTipo, "Fornecedor");
+              break;
+            case 2:
+              strcpy(novoTipo, "Fabricante");
+              break;
+            case 3:
+              strcpy(novoTipo, "Reciclagem");
+              break;
+            case 4:
+              strcpy(novoTipo, "Agência");
+              break;
+            default:
+              printf("Opção inválida! Tente novamente.\n");
+              break;
+            }
+          }
+        } break;
+        case 3:
+          printf("Novo contacto: ");
+          fgets(novoContacto, sizeof(novoContacto), stdin);
+          strtok(novoContacto, "\n");
+          break;
+        case 4:
+          printf("Novo nome: ");
+          fgets(novoNome, sizeof(novoNome), stdin);
+          strtok(novoNome, "\n");
+
+          printf("Novo tipo: ");
+          fgets(novoTipo, sizeof(novoTipo), stdin);
+          strtok(novoTipo, "\n");
+
+          printf("Novo contacto: ");
+          fgets(novoContacto, sizeof(novoContacto), stdin);
+          strtok(novoContacto, "\n");
+          break;
+        case 0:
+          printf("A guardar alterações...\n");
+          break;
+        default:
+          printf("Opção inválida! Tente novamente.\n");
+        }
+      } while (opcao != 0);
+
+      fprintf(temp, "%d;%s;%s;%s\n", id, novoNome, novoTipo, novoContacto);
     } else {
       fprintf(temp, "%d;%s;%s;%s\n", id, nome, tipo, contacto);
     }
@@ -216,12 +346,12 @@ void AlterarEmpresa() {
   fclose(temp);
 
   if (encontrado) {
-    remove("empresas.txt");
-    rename("temp.txt", "empresas.txt");
-    printf("Funcionário com ID %d alterado com sucesso.\n", optionId);
+    remove(FILE_NAME);
+    rename("temp.txt", FILE_NAME);
+    printf("Empresa com ID %d alterada com sucesso.\n", optionId);
   } else {
     remove("temp.txt");
-    printf("Funcionário com ID %d não encontrado.\n", optionId);
+    printf("Empresa com ID %d não encontrada.\n", optionId);
   }
 }
 
@@ -233,7 +363,7 @@ void PesquisarEmpresa() {
   fgets(termo, sizeof(termo), stdin);
   strtok(termo, "\n"); // tirar o \n no final
 
-  FILE *arq = fopen("empresas.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
