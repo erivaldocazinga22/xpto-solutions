@@ -49,3 +49,8 @@ id_funcionario_owner
 data_operacao
 montante
 observacao
+
+
+
+
+padroes para classificacao de nivel em programacao(jr, pleno, senior)

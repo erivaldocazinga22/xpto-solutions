@@ -107,7 +107,7 @@ void ApagarFuncionario() {
   char nome[100], funcao[100], descricao[200];
   int encontrado = 0;
 
-  // Ler e filtrar funcionários
+  // Ler e filtrar funcionários que não possuem o ID selecionado <optionId>
   while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, funcao,
                 descricao) == 4) {
     if (id != optionId) {
@@ -154,13 +154,15 @@ void ApagarFuncionario() {
       fclose(postos);
     if (tempPostos)
       fclose(tempPostos);
-    printf("Aviso: Não foi possível atualizar o ficheiro de postos de "
-           "trabalho.\n");
   }
 
   // === Remover de operacoes.txt ===
   FILE *operacoes = fopen("operacoes.txt", "r");
   FILE *tempOperacoes = fopen("temp_operacoes.txt", "w");
+
+  int operacao_encontrada =
+      0; // varialvel para controlar se existe opecao com o id do funcionario
+
   if (operacoes && tempOperacoes) {
     int idOperacao, idFuncionario;
     char tipoOperacao[100], descricaoOperacao[200];
@@ -176,16 +178,20 @@ void ApagarFuncionario() {
     fclose(tempOperacoes);
     remove("operacoes.txt");
     rename("temp_operacoes.txt", "operacoes.txt");
+    operacao_encontrada = 1;
   } else {
     if (operacoes)
       fclose(operacoes);
     if (tempOperacoes)
       fclose(tempOperacoes);
-    printf("Aviso: Não foi possível atualizar o ficheiro de operações.\n");
   }
 
-  printf("Referências ao funcionário foram removidas dos ficheiros "
-         "relacionados.\n");
+  if (operacao_encontrada) {
+    printf("Referências ao funcionário foram removidas dos ficheiros "
+           "relacionados.\n");
+  }
+
+  printf("%s, funcionario com ID = %d foi deletado com sucesso.", nome, id);
 }
 
 void AlterarFuncionario() {
@@ -193,7 +199,7 @@ void AlterarFuncionario() {
   int optionId;
   printf("Digite o id do funcionário que deseja alterar: ");
   scanf("%d", &optionId);
-  getchar(); // limpar o \n que fica no buffer
+  getchar(); // limpar \n do buffer
 
   FILE *arq = fopen("funcionario.txt", "r");
   if (arq == NULL) {
@@ -216,19 +222,60 @@ void AlterarFuncionario() {
                 descricao) == 4) {
     if (id == optionId) {
       Funcionario novoFuncionario;
+      strcpy(novoFuncionario.nome, nome);
+      strcpy(novoFuncionario.funcao, funcao);
+      strcpy(novoFuncionario.descricao, descricao);
 
-      printf("\nNovo nome: ");
-      fgets(novoFuncionario.nome, sizeof(novoFuncionario.nome), stdin);
-      strtok(novoFuncionario.nome, "\n"); // remove \n
+      int optionSelected;
+      do {
+        printf("\n--- Menu de Actualização de Funcionários ---\n");
+        printf("1. Alterar nome\n");
+        printf("2. Alterar função\n");
+        printf("3. Alterar descrição\n");
+        printf("4. Alterar todos os campos\n");
+        printf("0. Guardar alterações e sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &optionSelected);
+        getchar(); // limpar \n
 
-      printf("Nova função: ");
-      fgets(novoFuncionario.funcao, sizeof(novoFuncionario.funcao), stdin);
-      strtok(novoFuncionario.funcao, "\n");
+        switch (optionSelected) {
+        case 1:
+          printf("Novo nome: ");
+          fgets(novoFuncionario.nome, sizeof(novoFuncionario.nome), stdin);
+          strtok(novoFuncionario.nome, "\n");
+          break;
+        case 2:
+          printf("Nova função: ");
+          fgets(novoFuncionario.funcao, sizeof(novoFuncionario.funcao), stdin);
+          strtok(novoFuncionario.funcao, "\n");
+          break;
+        case 3:
+          printf("Nova descrição: ");
+          fgets(novoFuncionario.descricao, sizeof(novoFuncionario.descricao),
+                stdin);
+          strtok(novoFuncionario.descricao, "\n");
+          break;
+        case 4:
+          printf("Novo nome: ");
+          fgets(novoFuncionario.nome, sizeof(novoFuncionario.nome), stdin);
+          strtok(novoFuncionario.nome, "\n");
 
-      printf("Nova descrição: ");
-      fgets(novoFuncionario.descricao, sizeof(novoFuncionario.descricao),
-            stdin);
-      strtok(novoFuncionario.descricao, "\n");
+          printf("Nova função: ");
+          fgets(novoFuncionario.funcao, sizeof(novoFuncionario.funcao), stdin);
+          strtok(novoFuncionario.funcao, "\n");
+
+          printf("Nova descrição: ");
+          fgets(novoFuncionario.descricao, sizeof(novoFuncionario.descricao),
+                stdin);
+          strtok(novoFuncionario.descricao, "\n");
+          break;
+        case 0:
+          printf("A guardar alterações...\n");
+          break;
+        default:
+          printf("Opção inválida! Tente novamente.\n");
+        }
+      } while (optionSelected != 0);
 
       fprintf(temp, "%d;%s;%s;%s\n", id, novoFuncionario.nome,
               novoFuncionario.funcao, novoFuncionario.descricao);
@@ -253,11 +300,13 @@ void AlterarFuncionario() {
 
 void PesquisarFuncionario() {
   printf("\n============ PESQUISAR FUNCIONÁRIO =============\n");
-  char termo[100];
-  printf("Digite o nome, função ou parte da descrição para pesquisar: ");
-  getchar(); // limpar \n pendente
-  fgets(termo, sizeof(termo), stdin);
-  strtok(termo, "\n"); // tirar o \n no final
+  printf("1. Pesquisar por ID\n");
+  printf("2. Pesquisa por nome (com * e ?)\n");
+  printf("0. Voltar\n");
+
+  int opcao;
+  printf("\nEscolha uma opção: ");
+  scanf("%d", &opcao);
 
   FILE *arq = fopen("funcionario.txt", "r");
   if (arq == NULL) {
@@ -265,25 +314,86 @@ void PesquisarFuncionario() {
     return;
   }
 
-  int id;
-  char nome[100], funcao[100], descricao[200];
-  int encontrado = 0;
+  if (opcao == 1) {
+    int optionId;
+    printf("Digite o ID do funcionário: ");
+    scanf("%d", &optionId);
+    int id, encontrado = 0;
+    char nome[100], funcao[100], descricao[200];
 
-  while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, funcao,
-                descricao) == 4) {
-    if (strstr(nome, termo) != NULL || strstr(funcao, termo) != NULL ||
-        strstr(descricao, termo) != NULL) {
-      printf("\nID: %d\n", id);
-      printf("Nome: %s\n", nome);
-      printf("Função: %s\n", funcao);
-      printf("Descrição: %s\n", descricao);
-      encontrado = 1;
+    while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, funcao,
+                  descricao) == 4) {
+      if (id == optionId) {
+        printf("\n--- Funcionário Encontrado ---\n");
+        printf("ID: %d\n", id);
+        printf("Nome: %s\n", nome);
+        printf("Função: %s\n", funcao);
+        printf("Descrição: %s\n", descricao);
+        encontrado = 1;
+        break;
+      }
+    }
+
+    if (!encontrado) {
+      printf("Funcionário com ID %d não encontrado.\n", optionId);
     }
   }
 
-  fclose(arq);
+  else if (opcao == 2) {
+    char padrao[100];
+    printf("Digite o padrão de nome (use * e ?): ");
+    scanf(" %[^\n]", padrao);
 
-  if (!encontrado) {
-    printf("\nNenhum funcionário encontrado com o termo \"%s\".\n", termo);
+    int id, encontrados = 0;
+    char nome[100], funcao[100], descricao[200];
+
+    printf("\n--- Funcionários Encontrados ---\n");
+    while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, funcao,
+                  descricao) == 4) {
+      const char *p = padrao;
+      const char *n = nome;
+      const char *star = NULL;
+      const char *backup = NULL;
+
+      // Lógica para verificar * e ? sem função externa
+      while (*n) {
+        if (*p == '*') {
+          star = p++;
+          backup = n;
+        } else if (*p == '?' || *p == *n) {
+          p++;
+          n++;
+        } else if (star) {
+          p = star + 1;
+          n = ++backup;
+        } else {
+          break;
+        }
+      }
+      while (*p == '*')
+        p++;
+
+      if (*p == '\0' && *n == '\0') {
+        printf("ID: %d\n", id);
+        printf("Nome: %s\n", nome);
+        printf("Função: %s\n", funcao);
+        printf("Descrição: %s\n\n", descricao);
+        encontrados++;
+      }
+    }
+
+    if (!encontrados) {
+      printf("Nenhum funcionário com nome correspondente ao padrão.\n");
+    }
   }
+
+  else if (opcao == 0) {
+    printf("A voltar ao Menu Principal...\n");
+  }
+
+  else {
+    printf("Opção inválida! Tente novamente.\n");
+  }
+
+  fclose(arq);
 }
