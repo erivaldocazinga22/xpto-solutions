@@ -71,6 +71,7 @@ void ListarFuncionarios() {
 
   int id;
   char nome[100], funcao[100], descricao[200];
+  int encontrou = 0;
 
   while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, funcao,
                 descricao) == 4) {
@@ -78,6 +79,11 @@ void ListarFuncionarios() {
     printf("Nome: %s\n", nome);
     printf("Função: %s\n", funcao);
     printf("Descrição: %s\n", descricao);
+    encontrou = 1;
+  }
+
+  if (!encontrou) {
+    printf("\nNenhum funcionário encontrado.\n");
   }
 
   fclose(arq);

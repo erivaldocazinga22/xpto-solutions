@@ -4,8 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define FILE_NAME "posto-de-trabalho.txt"
+
 int obterProximoPostoId() {
-  FILE *arq = fopen("posto-de-trabalho.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL)
     return 1;
 
@@ -24,7 +26,7 @@ int obterProximoPostoId() {
 }
 
 void salvarPosto(PostoTrabalho novoPosto) {
-  FILE *arq = fopen("posto-de-trabalho.txt", "a");
+  FILE *arq = fopen(FILE_NAME, "a");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
@@ -73,7 +75,7 @@ void InserirPostoTrabalho() {
 }
 
 void ListarPostosTrabalho() {
-  FILE *arq = fopen("posto-de-trabalho.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
@@ -83,24 +85,30 @@ void ListarPostosTrabalho() {
 
   int id, idFunc;
   char nome[100], local[100], seccao[100], descricao[100];
-
+  int encontrou = 0;
   while (fscanf(arq, "%d;%d;%99[^;];%99[^;];%99[^;];%99[^\n]\n", &id, &idFunc,
                 nome, local, seccao, descricao) == 6) {
     printf("\nID: %d\nID Funcionário: %d\nNome: %s\nLocal: %s\nSeccao: "
            "%s\nDescrição: %s\n",
            id, idFunc, nome, local, seccao, descricao);
+    encontrou = 1;
   }
+
+  if (!encontrou) {
+    printf("\nNenhum posto de trabalho encontrado.\n");
+  }
+
   fclose(arq);
 }
 
 void AlterarPostoTrabalho() {
   printf("\n============ ALTERAR POSTO DE TRABALHO =============\n");
   int optionId;
-  printf("Digite o id do posto que deseja alterar: ");
+  printf("Digite o ID do posto que deseja alterar: ");
   scanf("%d", &optionId);
-  getchar(); // limpar o \n que fica no buffer
+  getchar(); // limpar o \n
 
-  FILE *arq = fopen("posto-de-trabalho.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
@@ -108,7 +116,7 @@ void AlterarPostoTrabalho() {
 
   FILE *temp = fopen("temp.txt", "w");
   if (temp == NULL) {
-    printf("Erro ao criar ficheiro temporário.\n");
+    printf("Erro ao criar o ficheiro temporário.\n");
     fclose(arq);
     return;
   }
@@ -117,32 +125,81 @@ void AlterarPostoTrabalho() {
   char nome[100], local[100], seccao[100], descricao[200];
   int encontrado = 0;
 
-  while (fscanf(arq, "%d;%d;%99[^;];%99[^;]%99[^;];%199[^\n]\n", &id, &idFunc,
+  while (fscanf(arq, "%d;%d;%99[^;];%99[^;];%99[^;];%199[^\n]\n", &id, &idFunc,
                 nome, local, seccao, descricao) == 6) {
     if (id == optionId) {
       PostoTrabalho novoPosto;
+      strcpy(novoPosto.nome, nome);
+      strcpy(novoPosto.local, local);
+      strcpy(novoPosto.seccao, seccao);
+      strcpy(novoPosto.descricao, descricao);
+      novoPosto.id = id;
+      novoPosto.idFunc = idFunc;
 
-      printf("\nNovo nome: ");
-      fgets(novoPosto.nome, sizeof(novoPosto.nome), stdin);
-      strtok(novoPosto.nome, "\n"); // remove \n
+      int optionSelected;
+      do {
+        printf("\n--- Menu de Actualização de Posto de Trabalho ---\n");
+        printf("1. Alterar nome\n");
+        printf("2. Alterar local\n");
+        printf("3. Alterar secção\n");
+        printf("4. Alterar descrição\n");
+        printf("5. Alterar todos os campos\n");
+        printf("0. Guardar alterações e sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &optionSelected);
+        getchar(); // limpar \n
 
-      printf("Nova local: ");
-      fgets(novoPosto.local, sizeof(novoPosto.local), stdin);
-      strtok(novoPosto.local, "\n");
+        switch (optionSelected) {
+        case 1:
+          printf("Novo nome: ");
+          fgets(novoPosto.nome, sizeof(novoPosto.nome), stdin);
+          strtok(novoPosto.nome, "\n");
+          break;
+        case 2:
+          printf("Novo local: ");
+          fgets(novoPosto.local, sizeof(novoPosto.local), stdin);
+          strtok(novoPosto.local, "\n");
+          break;
+        case 3:
+          printf("Nova secção: ");
+          fgets(novoPosto.seccao, sizeof(novoPosto.seccao), stdin);
+          strtok(novoPosto.seccao, "\n");
+          break;
+        case 4:
+          printf("Nova descrição: ");
+          fgets(novoPosto.descricao, sizeof(novoPosto.descricao), stdin);
+          strtok(novoPosto.descricao, "\n");
+          break;
+        case 5:
+          printf("Novo nome: ");
+          fgets(novoPosto.nome, sizeof(novoPosto.nome), stdin);
+          strtok(novoPosto.nome, "\n");
 
-      printf("Nova seccao: ");
-      fgets(novoPosto.seccao, sizeof(novoPosto.seccao), stdin);
-      strtok(novoPosto.seccao, "\n");
+          printf("Novo local: ");
+          fgets(novoPosto.local, sizeof(novoPosto.local), stdin);
+          strtok(novoPosto.local, "\n");
 
-      printf("Nova descrição: ");
-      fgets(novoPosto.descricao, sizeof(novoPosto.descricao), stdin);
-      strtok(novoPosto.descricao, "\n");
+          printf("Nova secção: ");
+          fgets(novoPosto.seccao, sizeof(novoPosto.seccao), stdin);
+          strtok(novoPosto.seccao, "\n");
 
-      fprintf(temp, "%d;%d;%s;%s;%s%s\n", id, idFunc, novoPosto.nome,
+          printf("Nova descrição: ");
+          fgets(novoPosto.descricao, sizeof(novoPosto.descricao), stdin);
+          strtok(novoPosto.descricao, "\n");
+          break;
+        case 0:
+          printf("A guardar alterações...\n");
+          break;
+        default:
+          printf("Opção inválida! Tente novamente.\n");
+        }
+      } while (optionSelected != 0);
+
+      fprintf(temp, "%d;%d;%s;%s;%s;%s\n", id, idFunc, novoPosto.nome,
               novoPosto.local, novoPosto.seccao, novoPosto.descricao);
       encontrado = 1;
     } else {
-      fprintf(temp, "%d;%d;%s;%s;%s%s\n", id, idFunc, nome, local, seccao,
+      fprintf(temp, "%d;%d;%s;%s;%s;%s\n", id, idFunc, nome, local, seccao,
               descricao);
     }
   }
@@ -151,8 +208,8 @@ void AlterarPostoTrabalho() {
   fclose(temp);
 
   if (encontrado) {
-    remove("posto-de-trabalho.txt");
-    rename("temp.txt", "posto-de-trabalho.txt");
+    remove(FILE_NAME);
+    rename("temp.txt", FILE_NAME);
     printf("Posto de trabalho com ID %d alterado com sucesso.\n", optionId);
   } else {
     remove("temp.txt");
@@ -163,7 +220,7 @@ void AlterarPostoTrabalho() {
 void ApagarPostoTrabalho() {
   printf("\n============ APAGAR POSTO DE TRABALHO =============\n");
   int optionId;
-  printf("Digite o id do posto de trabalho: ");
+  printf("Digite o ID do posto de trabalho: ");
   scanf("%d", &optionId);
 
   FILE *arq = fopen("posto-de-trabalho.txt", "r");
@@ -183,7 +240,7 @@ void ApagarPostoTrabalho() {
   char nome[100], local[100], seccao[100], descricao[200];
   int encontrado = 0;
 
-  while (fscanf(arq, "%d;%d;%99[^;];%99[^;]%99[^;];%199[^\n]\n", &id, &idFunc,
+  while (fscanf(arq, "%d;%d;%99[^;];%99[^;];%99[^;];%199[^\n]\n", &id, &idFunc,
                 nome, local, seccao, descricao) == 6) {
     if (id != optionId) {
       fprintf(temp, "%d;%d;%s;%s;%s;%s\n", id, idFunc, nome, local, seccao,
@@ -197,12 +254,12 @@ void ApagarPostoTrabalho() {
   fclose(temp);
 
   if (encontrado) {
-    remove("posto-de-trabalho.txt");             // Apaga o antigo
-    rename("temp.txt", "posto-de-trabalho.txt"); // Renomeia o novo
-    printf("Posoto de trabalho com ID %d apagado com sucesso.\n", optionId);
+    remove("posto-de-trabalho.txt");
+    rename("temp.txt", "posto-de-trabalho.txt");
+    printf("Posto de trabalho com ID %d apagado com sucesso.\n", optionId);
   } else {
-    remove("temp.txt"); // Não encontrado, apaga temp
-    printf("Posoto de trabalho com ID %d não encontrado.\n", optionId);
+    remove("temp.txt");
+    printf("Posto de trabalho com ID %d não encontrado.\n", optionId);
   }
 }
 
@@ -214,7 +271,7 @@ void PesquisarPostoTrabalho() {
   fgets(termo, sizeof(termo), stdin);
   strtok(termo, "\n"); // tirar o \n no final
 
-  FILE *arq = fopen("posto-de-trabalho.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;

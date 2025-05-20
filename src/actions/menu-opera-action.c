@@ -136,6 +136,7 @@ void ListarOperacoes() {
   char observacoa[100], dataOperacao[10], dataEntrada[10], dataSaida[10],
       dataPreviaChegada[10];
 
+  int encontrou = 0;
   while (fscanf(arq, "%d;%d;%d;%d;%d;%d;%f;%s;%d;%s;%s;%s;%s;\n", &numDoc,
                 &numDocExterno, &idFunc, &idEmpresa, &idPosto, &idComponente,
                 &montante, observacoa, &tipoOperacao, dataOperacao, dataEntrada,
@@ -153,6 +154,11 @@ void ListarOperacoes() {
     printf("Descrição: %s\n", dataEntrada);
     printf("Descrição: %s\n", dataSaida);
     printf("Descrição: %s\n", dataPreviaChegada);
+    encontrou = 1;
+  }
+
+  if (!encontrou) {
+    printf("\nNenhuma operação encontrada.\n");
   }
 
   fclose(arq);

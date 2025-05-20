@@ -70,15 +70,19 @@ void ListarEmpresas() {
 
   int id;
   char nome[100], tipo[100], contacto[200];
-
+  int encontrou = 0;
   while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, tipo,
                 contacto) == 4) {
     printf("\nID: %d\n", id);
     printf("Nome: %s\n", nome);
     printf("Tipo: %s\n", tipo);
     printf("Contacto: %s\n", contacto);
+    encontrou = 1;
   }
 
+  if (!encontrou) {
+    printf("\nNenhuma empresa encontrada.\n");
+  }
   fclose(arq);
 }
 

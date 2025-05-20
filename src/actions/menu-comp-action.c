@@ -109,6 +109,7 @@ void ListarComponentes() {
 
   int id, idFornecedor, idFabricante, idPostoTrabalho;
   char tipo[100], designacao[100], condicao[100], observacao[255];
+  int encontrou = 0;
 
   while (fscanf(arq, "%d;%d;%d;%d;%99[^;];%99[^;];%99[^;];%254[^\n]\n", &id,
                 &idFornecedor, &idFabricante, &idPostoTrabalho, tipo,
@@ -117,6 +118,11 @@ void ListarComponentes() {
            "%s\nDesignação: %s\nCondição: %s\nObservação: %s\n",
            id, idFornecedor, idFabricante, idPostoTrabalho, tipo, designacao,
            condicao, observacao);
+    encontrou = 1;
+  }
+
+  if (!encontrou) {
+    printf("\nNenhum funcionário encontrado.\n");
   }
   fclose(arq);
 }
