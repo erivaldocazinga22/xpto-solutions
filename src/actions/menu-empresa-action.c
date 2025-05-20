@@ -193,7 +193,9 @@ void ApagarEmpresa() {
   // Apaga operações associadas
   FILE *operacoes = fopen("operacoes.txt", "r");
   FILE *tempOperacoes = fopen("temp_operacoes.txt", "w");
+
   int operacao_encontrada = 0;
+
   if (operacoes && tempOperacoes) {
     int idOperacao, idFuncionario, idEmpresa;
     char tipoOperacao[100], descricao[200];
@@ -217,11 +219,79 @@ void ApagarEmpresa() {
       fclose(operacoes);
     if (tempOperacoes)
       fclose(tempOperacoes);
-
-    if (operacao_encontrada)
-      printf("Referências a empresa foram removidas dos ficheiros "
-             "relacionados.\n");
   }
+
+  // Apaga componentes associados
+  FILE *components = fopen("componentes.txt", "r");
+  FILE *tempComponents = fopen("temp_componentes.txt", "w");
+
+  int component_encontrada = 0;
+
+  if (operacoes && tempOperacoes) {
+    int id, idFornecedor, idFabricante, idPostoTrabalho;
+    char tipo[100], designacao[100], condicao[100], observacao[255];
+
+    while (fscanf(arq, "%d;%d;%d;%d;%99[^;];%99[^;];%99[^;];%254[^\n]\n", &id,
+                  &idFornecedor, &idFabricante, &idPostoTrabalho, tipo,
+                  designacao, condicao, observacao) == 8) {
+      if (id != optionId) {
+        fprintf(temp, "%d;%d;%d;%d;%s;%s;%s;%s\n", id, idFornecedor,
+                idFabricante, idPostoTrabalho, tipo, designacao, condicao,
+                observacao);
+      } else {
+        component_encontrada = 1;
+      }
+    }
+
+    fclose(operacoes);
+    fclose(tempOperacoes);
+    remove("componentes.txt");
+    rename("temp_componentes.txt", "componentes.txt");
+    printf("Componentes associados à empresa foram removidas.\n");
+    operacao_encontrada = 1;
+  } else {
+    if (components)
+      fclose(operacoes);
+    if (tempComponents)
+      fclose(tempOperacoes);
+  }
+
+  // Apaga postos de trabalhos associados
+  FILE *postos = fopen("posto-de-trabalho.txt", "r");
+  FILE *tempPostos = fopen("temp_posto-de-trabalho.txt", "w");
+
+  int posto_encontrada = 0;
+
+  if (postos && tempPostos) {
+    int id, idFunc;
+    char nome[100], local[100], seccao[100], descricao[200];
+
+    while (fscanf(arq, "%d;%d;%99[^;];%99[^;];%99[^;];%199[^\n]\n", &id,
+                  &idFunc, nome, local, seccao, descricao) == 6) {
+      if (id != optionId) {
+        fprintf(temp, "%d;%d;%s;%s;%s;%s\n", id, idFunc, nome, local, seccao,
+                descricao);
+      } else {
+        posto_encontrada = 1;
+      }
+    }
+
+    fclose(operacoes);
+    fclose(tempOperacoes);
+    remove("posto-de-trabalho.txt");
+    rename("temp_posto-de-trabalho.txt", "posto-de-trabalho.txt");
+    printf("Postos de trabalho associados à empresa foram removidas.\n");
+    posto_encontrada = 1;
+  } else {
+    if (postos)
+      fclose(operacoes);
+    if (tempPostos)
+      fclose(tempOperacoes);
+  }
+
+  if (operacao_encontrada || component_encontrada || posto_encontrada)
+    printf("Referências a empresa foram removidas dos ficheiros "
+           "relacionados.\n");
 }
 
 void AlterarEmpresa() {

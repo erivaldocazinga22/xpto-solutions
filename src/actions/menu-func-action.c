@@ -62,29 +62,25 @@ void InserirFuncionario() {
 
 void ListarFuncionarios() {
   FILE *arq = fopen("funcionario.txt", "r");
-  if (arq == NULL) {
+  if (!arq) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
   }
 
-  printf("\n============ LISTA DE FUNCIONÁRIOS =============\n");
-
-  int id;
+  int id, encontrou = 0;
   char nome[100], funcao[100], descricao[200];
-  int encontrou = 0;
+
+  printf("\n============ LISTA DE FUNCIONÁRIOS =============\n");
 
   while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, funcao,
                 descricao) == 4) {
-    printf("\nID: %d\n", id);
-    printf("Nome: %s\n", nome);
-    printf("Função: %s\n", funcao);
-    printf("Descrição: %s\n", descricao);
+    printf("\nID: %d\nNome: %s\nFunção: %s\nDescrição: %s\n", id, nome, funcao,
+           descricao);
     encontrou = 1;
   }
 
-  if (!encontrou) {
+  if (!encontrou)
     printf("\nNenhum funcionário encontrado.\n");
-  }
 
   fclose(arq);
 }

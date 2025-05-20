@@ -28,11 +28,12 @@ typedef struct {
 
 typedef struct {
   int id;
-  int idForncedor;
+  int idFornecedor;
   int idFabricante;
   int idPostoTrabalho;
   int numSerie;
-  char dataAquisicao[10];
+  int garantia;
+  char dataAquisicao[20];
   char tipo[MAX_STR];
   char designacao[MAX_STR];
   char condicao[MAX_STR]; // Novo, Utilizado
