@@ -148,6 +148,15 @@ void ListarOperacoes() {
     printf("Erro ao abrir o ficheiro.\n");
     return;
   }
+  /*
+    FILE *arqFunc = fopen("funcionario.txt", "r");
+    if (arq == NULL) {
+      printf("Erro ao abrir o ficheiro.\n");
+      return;
+    }
+
+    int id, funcEncontrou = 0;
+    char nome[100], funcao[100], descricao[200]; */
 
   printf("\n============ LISTA DE OPERACOES =============\n");
 
