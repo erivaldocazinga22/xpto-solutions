@@ -10,7 +10,8 @@ void menuComponentes() {
     printf("2. Alterar Componente\n");
     printf("3. Apagar Componente\n");
     printf("4. Listar Componentes\n");
-    printf("5. Pesquisar Componente\n");
+    printf("5. Troca de posto de trabalho - Componente\n");
+    printf("6. Pesquisar Componente\n");
     printf("0. Voltar ao Menu Principal\n");
     printf("Escolha uma opção: ");
     scanf("%d", &opcao);
@@ -29,6 +30,9 @@ void menuComponentes() {
       ListarComponentes();
       break;
     case 5:
+      TrocaDePostoDeTrabalho();
+      break;
+    case 6:
       PesquisarComponentes();
       break;
     case 0:

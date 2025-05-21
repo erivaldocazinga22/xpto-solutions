@@ -1,3 +1,4 @@
+#include "../include/menu.h"
 #include "../include/structs.h"
 #include "../include/utils.h"
 #include <stdio.h>
@@ -484,5 +485,98 @@ void PesquisarComponentes() {
 
   if (!encontrado) {
     printf("\nNenhum componente encontrado com o termo \"%s\".\n", termo);
+  }
+}
+
+void TrocaDePostoDeTrabalho() {
+  printf(
+      "\n============ TROCA DE POSTO DE TRABALHO - COMPONENTE =============\n");
+  int optionId;
+  printf("Digite o ID do componente que deseja alterar: ");
+  scanf("%d", &optionId);
+  limparBuffer();
+
+  FILE *arq = fopen(FILE_NAME, "r");
+  if (arq == NULL) {
+    printf("Erro ao abrir o ficheiro.\n");
+    return;
+  }
+
+  FILE *temp = fopen("temp.txt", "w");
+  if (temp == NULL) {
+    printf("Erro ao criar ficheiro temporário.\n");
+    fclose(arq);
+    return;
+  }
+
+  int id, idFornecedor, idFabricante, idPostoTrabalho;
+  char designacao[100], tipo[100], condicao[100], observacao[255];
+  int numSerie, garantia;
+  char dataAquisicao[20];
+  int encontrado = 0;
+
+  while (fscanf(arq,
+                "%d;%d;%d;%d;%d;%99[^;];%99[^;];%99[^;];%254[^;];%d;%19[^\n]\n",
+                &id, &idFornecedor, &idFabricante, &idPostoTrabalho, &numSerie,
+                designacao, tipo, condicao, observacao, &garantia,
+                dataAquisicao) == 11) {
+
+    if (id == optionId) {
+      int idPosto, error = 0;
+      do {
+        printf("Digite o ID do novo posto: ");
+        scanf("%d", &idPosto);
+        getchar();
+
+        error = postoAlreadyExists(idPosto);
+        if (!error) {
+          printf("Id do Forncedor nao existe.\n");
+        }
+      } while (!error);
+
+      Componente novoComponente;
+
+      // Guardar dados antigos
+      novoComponente.id = id;
+      novoComponente.idFornecedor = idFornecedor;
+      novoComponente.idFabricante = idFabricante;
+      novoComponente.idPostoTrabalho = idPosto;
+      novoComponente.numSerie = numSerie;
+      novoComponente.garantia = garantia;
+      strcpy(novoComponente.designacao, designacao);
+      strcpy(novoComponente.tipo, tipo);
+      strcpy(novoComponente.condicao, condicao);
+      strcpy(novoComponente.observacao, observacao);
+      strcpy(novoComponente.dataAquisicao, dataAquisicao);
+
+      // trocar
+
+      // Escreve componente alterado no ficheiro temporário
+      fprintf(temp, "%d;%d;%d;%d;%d;%s;%s;%s;%s;%d;%s\n", novoComponente.id,
+              novoComponente.idFornecedor, novoComponente.idFabricante,
+              novoComponente.idPostoTrabalho, novoComponente.numSerie,
+              novoComponente.designacao, novoComponente.tipo,
+              novoComponente.condicao, novoComponente.observacao,
+              novoComponente.garantia, novoComponente.dataAquisicao);
+
+      encontrado = 1;
+    } else {
+      // Mantém componente não alterado
+      fprintf(temp, "%d;%d;%d;%d;%d;%s;%s;%s;%s;%d;%s\n", id, idFornecedor,
+              idFabricante, idPostoTrabalho, numSerie, designacao, tipo,
+              condicao, observacao, garantia, dataAquisicao);
+    }
+  }
+
+  fclose(arq);
+  fclose(temp);
+
+  if (encontrado) {
+    remove(FILE_NAME);
+    rename("temp.txt", FILE_NAME);
+    printf("Componente atualizado com sucesso.\n");
+  } else {
+    remove("temp.txt");
+    printf("Componente com ID %d não encontrado.\n", optionId);
   }
 }
