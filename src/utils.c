@@ -87,8 +87,15 @@ int funcionarioAlreadyExists(int idFunc) {
 
 int operacaoAlreadyExists(int idOpera) {
   FILE *arq = fopen("opercoes.txt", "r");
+
+  // Se não existe, cria o ficheiro vazio e retorna 0 (não existe)
   if (arq == NULL) {
-    printf("Erro ao abrir o ficheiro.\n");
+    arq = fopen("opercoes.txt", "w");
+    if (arq == NULL) {
+      printf("Erro ao criar o ficheiro.\n");
+      return 0;
+    }
+    fclose(arq);
     return 0;
   }
 
@@ -99,14 +106,63 @@ int operacaoAlreadyExists(int idOpera) {
       dataPreviaChegada[10];
 
   int encontrado = 0;
-  while (fscanf(arq, "%d;%d;%d;%d;%d;%d;%f;%s;%d;%s;%s;%s;%s;\n", &numDoc,
-                &numDocExterno, &idFunc, &idEmpresa, &idPosto, &idComponente,
-                &montante, observacoa, &tipoOperacao, dataOperacao, dataEntrada,
-                dataSaida, dataPreviaChegada) == 13) {
+  while (
+      fscanf(arq,
+             "%d;%d;%d;%d;%d;%d;%f;%99[^;];%d;%9[^;];%9[^;];%9[^;];%9[^;];\n",
+             &numDoc, &numDocExterno, &idFunc, &idEmpresa, &idPosto,
+             &idComponente, &montante, observacoa, &tipoOperacao, dataOperacao,
+             dataEntrada, dataSaida, dataPreviaChegada) == 13) {
     if (numDoc == idOpera) {
+      encontrado++;
+    }
+  }
+
+  fclose(arq);
+  return encontrado;
+}
+
+int empresaAlreadyExists(int idEmpresa) {
+  FILE *arq = fopen("empresas.txt", "r");
+  if (arq == NULL) {
+    printf("Erro ao abrir o ficheiro.\n");
+    return 0;
+  }
+
+  int id;
+  char nome[100], tipo[100], contacto[200];
+  int encontrado = 0;
+
+  while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, tipo,
+                contacto) == 4) {
+    if (id == idEmpresa) {
       encontrado++;
     }
   }
   fclose(arq);
   return encontrado;
-}
+};
+
+int componenteAlreadyExists(int idComponente) {
+  FILE *arq = fopen("componentes.txt", "r");
+  if (arq == NULL) {
+    printf("Erro ao abrir o ficheiro.\n");
+    return 0;
+  }
+
+  int id, idFornecedor, idFabricante, idPostoTrabalho, numSerie, garantia;
+  char tipo[100], designacao[100], condicao[100], observacao[255];
+  char dataAquisicao[20];
+  int encontrado = 0;
+
+  while (fscanf(arq,
+                "%d;%d;%d;%d;%d;%99[^;];%99[^;];%99[^;];%254[^;];%d;%20[^\n]\n",
+                &id, &idFornecedor, &idFabricante, &idPostoTrabalho, &numSerie,
+                tipo, designacao, condicao, observacao, &garantia,
+                dataAquisicao) == 11) {
+    if (id == idComponente) {
+      encontrado++;
+    }
+  }
+  fclose(arq);
+  return encontrado;
+};

@@ -4,9 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h> // para lidar com a data de aquisição automatica
+
+#define FILE_NAME "operacoes.txt"
 
 int obterProximaOperaId() {
-  FILE *arq = fopen("opercoes.txt", "r");
+  FILE *arq = fopen("operacoes.txt", "r"); // Corrigido nome do arquivo
   if (arq == NULL) {
     return 1;
   }
@@ -26,134 +29,156 @@ int obterProximaOperaId() {
   return ultimoId + 1;
 }
 
-void salvarOperacao(Operacao novaOpercao) {
-  FILE *arq = fopen("opercoes.txt", "a");
+void salvarOperacao(Operacao novaOperacao) {
+  FILE *arq = fopen("operacoes.txt", "a");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
   }
 
   int numDoc = obterProximaOperaId();
-  int numDocExterno = numDoc * 1000;
-  fprintf(arq, "%d;%d;%d;%d;%d;%d;%f;%s;%d;%s;%s;%s;%s;\n", numDoc,
-          numDocExterno, novaOpercao.idFunc, novaOpercao.idEmpresa,
-          novaOpercao.idPosto, novaOpercao.idComponente, novaOpercao.montante,
-          novaOpercao.observacoa, novaOpercao.tipoOperacao,
-          novaOpercao.dataOperacao, novaOpercao.dataEntrada,
-          novaOpercao.dataSaida, novaOpercao.dataPreviaChegada);
+  int numDocExterno = numDoc * 1024;
+  fprintf(arq, "%d;%d;%d;%d;%d;%d;%f;%s;%s;%s;%s;%s;%s;\n", numDoc,
+          numDocExterno, novaOperacao.idFunc, novaOperacao.idEmpresa,
+          novaOperacao.idPosto, novaOperacao.idComponente,
+          novaOperacao.montante, novaOperacao.observacao,
+          novaOperacao.tipoOperacao, novaOperacao.dataOperacao,
+          novaOperacao.dataEntrada, novaOperacao.dataSaida,
+          novaOperacao.dataPreviaChegada);
 
   fclose(arq);
 }
 
 void InserirOperacao() {
-  printf("\n============ INSERIR OPERCACAO =============\n");
+  printf("\n============ INSERIR OPERACAO =============\n");
   Operacao novaOperacao;
-  int error = 0;
 
   getchar();
+  printf("Tipo de Operação: ");
+  fgets(novaOperacao.tipoOperacao, sizeof(novaOperacao.tipoOperacao), stdin);
+  strtok(novaOperacao.tipoOperacao, "\n");
 
   do {
-    printf("ID Operacoe: ");
+    printf("Montante da Operação: ");
+    scanf("%f", &novaOperacao.montante);
+  } while (novaOperacao.montante < 0);
+
+  getchar(); // limpar buffer do scanf
+  printf("Observação: ");
+  fgets(novaOperacao.observacao, sizeof(novaOperacao.observacao), stdin);
+  strtok(novaOperacao.observacao, "\n");
+
+  int error = 0;
+  do {
+    printf("ID do Funcionário: ");
     scanf("%d", &novaOperacao.idFunc);
     getchar();
 
-    error = operacaoAlreadyExists(novaOperacao.idFunc);
+    error = funcionarioAlreadyExists(novaOperacao.idFunc);
     if (!error) {
-      printf("Id do Operacoe nao existe.\n");
+      printf("Id do Forncedor nao existe.\n");
     }
   } while (!error);
 
   error = 0;
   do {
-    printf("ID Empresa: ");
+    printf("ID da empresa: ");
     scanf("%d", &novaOperacao.idEmpresa);
     getchar();
 
-    error = operacaoAlreadyExists(novaOperacao.idEmpresa);
+    error = empresaAlreadyExists(novaOperacao.idEmpresa);
     if (!error) {
-      printf("Id do Empresa nao existe.\n");
+      printf("Id da empresa não existe.\n");
     }
   } while (!error);
 
   error = 0;
   do {
-    printf("ID Posto: ");
+    printf("ID do posto de trabalho: ");
     scanf("%d", &novaOperacao.idPosto);
     getchar();
 
-    error = operacaoAlreadyExists(novaOperacao.idPosto);
+    error = postoAlreadyExists(novaOperacao.idPosto);
     if (!error) {
-      printf("Id do Posto nao existe.\n");
+      printf("Id do posto de trabalho não existe.\n");
     }
   } while (!error);
 
   error = 0;
   do {
-    printf("ID Componente: ");
+    printf("ID do componente: ");
     scanf("%d", &novaOperacao.idComponente);
     getchar();
 
-    error = operacaoAlreadyExists(novaOperacao.idComponente);
+    error = componenteAlreadyExists(novaOperacao.idComponente);
     if (!error) {
-      printf("Id do Componente nao existe.\n");
+      printf("Id do posto de trabalho não existe.\n");
     }
   } while (!error);
 
-  printf("Montante da Opercao: ");
-  scanf("%f", &novaOperacao.montante);
+  int qDiasDataPrev;
+  do {
+    printf("Quantidade de dias para a data prevista de entrega (em dias): ");
+    scanf("%d", &qDiasDataPrev);
+  } while (qDiasDataPrev < 0);
 
-  printf("Tipo de Opercao: ");
-  scanf("%d", &novaOperacao.tipoOperacao);
+  time_t agora = time(NULL);
+  struct tm dataHora = *localtime(&agora);
 
-  printf("Observacao: ");
-  fgets(novaOperacao.observacoa, sizeof(novaOperacao.observacoa), stdin);
-  strtok(novaOperacao.observacoa, "\n");
+  snprintf(novaOperacao.dataOperacao, sizeof(novaOperacao.dataOperacao),
+           "%02d/%02d/%04d", dataHora.tm_mday, dataHora.tm_mon + 1,
+           dataHora.tm_year + 1900);
 
-  printf("Data da Opercao(agora): ");
-  fgets(novaOperacao.dataOperacao, sizeof(novaOperacao.dataOperacao), stdin);
-  strtok(novaOperacao.dataOperacao, "\n");
+  dataHora.tm_mday += qDiasDataPrev;
+  mktime(&dataHora); // normaliza a data
 
-  printf("Data Previa de chegada(agora): ");
-  fgets(novaOperacao.dataPreviaChegada, sizeof(novaOperacao.dataPreviaChegada),
-        stdin);
-  strtok(novaOperacao.dataPreviaChegada, "\n");
+  snprintf(novaOperacao.dataPreviaChegada,
+           sizeof(novaOperacao.dataPreviaChegada), "%02d/%02d/%04d",
+           dataHora.tm_mday, dataHora.tm_mon + 1, dataHora.tm_year + 1900);
+
+  strcpy(novaOperacao.dataEntrada, "null");
+  strcpy(novaOperacao.dataSaida, "null");
 
   salvarOperacao(novaOperacao);
 }
 
 void ListarOperacoes() {
-  FILE *arq = fopen("opercoes.txt", "r");
+  FILE *arq = fopen("operacoes.txt", "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
   }
 
-  printf("\n============ LISTA DE OPERCOES =============\n");
+  printf("\n============ LISTA DE OPERACOES =============\n");
 
-  int numDoc, numDocExterno, idFunc, idEmpresa, idPosto, idComponente,
-      tipoOperacao;
+  int numDoc, numDocExterno, idFunc, idEmpresa, idPosto, idComponente;
   float montante;
-  char observacoa[100], dataOperacao[10], dataEntrada[10], dataSaida[10],
-      dataPreviaChegada[10];
+  char observacao[100], tipoOperacao[50], dataOperacao[11], dataEntrada[11],
+      dataSaida[11], dataPreviaChegada[11];
 
   int encontrou = 0;
-  while (fscanf(arq, "%d;%d;%d;%d;%d;%d;%f;%s;%d;%s;%s;%s;%s;\n", &numDoc,
-                &numDocExterno, &idFunc, &idEmpresa, &idPosto, &idComponente,
-                &montante, observacoa, &tipoOperacao, dataOperacao, dataEntrada,
-                dataSaida, dataPreviaChegada) == 13) {
-    printf("\nNumero Documento: %d\n", numDoc);
-    printf("\nNumero Documento Externo: %d\n", numDocExterno);
-    printf("\nID do Funcionario: %d\n", idFunc);
-    printf("\nID da Empresa: %d\n", idEmpresa);
-    printf("\nID da Posto: %d\n", idEmpresa);
-    printf("\nID da Componente: %d\n", idEmpresa);
-    printf("Montante da operacao: %f\n", montante);
-    printf("Função: %s\n", observacoa);
-    printf("Descrição: %d\n", tipoOperacao);
-    printf("Descrição: %s\n", dataOperacao);
-    printf("Descrição: %s\n", dataEntrada);
-    printf("Descrição: %s\n", dataSaida);
-    printf("Descrição: %s\n", dataPreviaChegada);
+  while (fscanf(arq,
+                "%d;%d;%d;%d;%d;%d;%f;%99[^;];%49[^;];%10[^;];%10[^;];%10[^;];%"
+                "10[^;];\n",
+                &numDoc, &numDocExterno, &idFunc, &idEmpresa, &idPosto,
+                &idComponente, &montante, observacao, tipoOperacao,
+                dataOperacao, dataEntrada, dataSaida,
+                dataPreviaChegada) == 13) {
+
+    printf("\nNúmero do Documento: %d\n", numDoc);
+    printf("Número do Documento Externo: %d\n", numDocExterno);
+    printf("ID do Funcionário: %d\n", idFunc);
+    printf("ID da Empresa: %d\n", idEmpresa);
+    printf("ID do Posto de Trabalho: %d\n", idPosto);
+    printf("ID do Componente: %d\n", idComponente);
+    printf("Montante da Operação: %.2f\n", montante);
+    printf("Observação: %s\n", observacao);
+    printf("Tipo de Operação: %s\n", tipoOperacao);
+    printf("Data da Operação: %s\n", dataOperacao);
+    printf("Data de Entrada: %s\n", dataEntrada);
+    printf("Data de Saída: %s\n", dataSaida);
+    printf("Data Prevista de Chegada: %s\n", dataPreviaChegada);
+
     encontrou = 1;
   }
 
@@ -165,9 +190,9 @@ void ListarOperacoes() {
 }
 
 void ApagarOperacao() {
-  printf("\n============ APAGAR OPERACOES =============\n");
+  printf("\n============ APAGAR OPERACAO =============\n");
   int optionId;
-  printf("Digite o id da opercao: ");
+  printf("Digite o id da operacao: ");
   scanf("%d", &optionId);
 
   FILE *arq = fopen("operacoes.txt", "r");
@@ -183,21 +208,23 @@ void ApagarOperacao() {
     return;
   }
 
-  int numDoc, numDocExterno, idFunc, idEmpresa, idPosto, idComponente,
-      tipoOperacao;
+  int numDoc, numDocExterno, idFunc, idEmpresa, idPosto, idComponente;
   float montante;
-  char observacoa[100], dataOperacao[10], dataEntrada[10], dataSaida[10],
-      dataPreviaChegada[10];
+  char observacao[100], tipoOperacao[50], dataOperacao[11], dataEntrada[11],
+      dataSaida[11], dataPreviaChegada[11];
   int encontrado = 0;
 
-  while (fscanf(arq, "%d;%d;%d;%d;%d;%d;%f;%s;%d;%s;%s;%s;%s;\n", &numDoc,
-                &numDocExterno, &idFunc, &idEmpresa, &idPosto, &idComponente,
-                &montante, observacoa, &tipoOperacao, dataOperacao, dataEntrada,
-                dataSaida, dataPreviaChegada) == 13) {
-    if (numDoc != optionId || numDocExterno != optionId) {
-      fprintf(temp, "%d;%d;%d;%d;%d;%d;%f;%s;%d;%s;%s;%s;%s;\n", numDoc,
+  while (fscanf(arq,
+                "%d;%d;%d;%d;%d;%d;%f;%99[^;];%49[^;];%10[^;];%10[^;];%10[^;];%"
+                "10[^;];\n",
+                &numDoc, &numDocExterno, &idFunc, &idEmpresa, &idPosto,
+                &idComponente, &montante, observacao, tipoOperacao,
+                dataOperacao, dataEntrada, dataSaida,
+                dataPreviaChegada) == 13) {
+    if (numDoc != optionId) {
+      fprintf(temp, "%d;%d;%d;%d;%d;%d;%f;%s;%s;%s;%s;%s;%s;\n", numDoc,
               numDocExterno, idFunc, idEmpresa, idPosto, idComponente, montante,
-              observacoa, tipoOperacao, dataOperacao, dataEntrada, dataSaida,
+              observacao, tipoOperacao, dataOperacao, dataEntrada, dataSaida,
               dataPreviaChegada);
     } else {
       encontrado = 1;
@@ -208,12 +235,12 @@ void ApagarOperacao() {
   fclose(temp);
 
   if (encontrado) {
-    remove("operacoes.txt");             // Apaga o antigo
-    rename("temp.txt", "operacoes.txt"); // Renomeia o novo
-    printf("Funcionário com ID %d apagado com sucesso.\n", optionId);
+    remove("operacoes.txt");
+    rename("temp.txt", "operacoes.txt");
+    printf("Operação com ID %d apagada com sucesso.\n", optionId);
   } else {
-    remove("temp.txt"); // Não encontrado, apaga temp
-    printf("Funcionário com ID %d não encontrado.\n", optionId);
+    remove("temp.txt");
+    printf("Operação com ID %d não encontrada.\n", optionId);
   }
 }
 
@@ -240,13 +267,13 @@ void AlterarOperacao() {
   int numDoc, numDocExterno, idFunc, idEmpresa, idPosto, idComponente,
       tipoOperacao;
   float montante;
-  char observacoa[100], dataOperacao[10], dataEntrada[10], dataSaida[10],
+  char observacao[100], dataOperacao[10], dataEntrada[10], dataSaida[10],
       dataPreviaChegada[10];
   int encontrado = 0;
 
   while (fscanf(arq, "%d;%d;%d;%d;%d;%d;%f;%s;%d;%s;%s;%s;%s;\n", &numDoc,
                 &numDocExterno, &idFunc, &idEmpresa, &idPosto, &idComponente,
-                &montante, observacoa, &tipoOperacao, dataOperacao, dataEntrada,
+                &montante, observacao, &tipoOperacao, dataOperacao, dataEntrada,
                 dataSaida, dataPreviaChegada) == 13) {
     if (numDoc == optionId) {
       Operacao novaOperacao;
@@ -255,22 +282,23 @@ void AlterarOperacao() {
       scanf("%f", &novaOperacao.montante);
 
       printf("Tipo de Opercao: ");
-      scanf("%d", &novaOperacao.tipoOperacao);
+      fgets(novaOperacao.tipoOperacao, sizeof(novaOperacao.tipoOperacao),
+            stdin);
 
       printf("Observacao: ");
-      fgets(novaOperacao.observacoa, sizeof(novaOperacao.observacoa), stdin);
-      strtok(novaOperacao.observacoa, "\n");
+      fgets(novaOperacao.observacao, sizeof(novaOperacao.observacao), stdin);
+      strtok(novaOperacao.observacao, "\n");
 
-      fprintf(arq, "%d;%d;%d;%d;%d;%d;%f;%s;%d;%s;%s;%s;%s;\n", numDoc,
+      fprintf(arq, "%d;%d;%d;%d;%d;%d;%f;%s;%s;%s;%s;%s;%s;\n", numDoc,
               numDocExterno, idFunc, idEmpresa, idPosto, idComponente, montante,
-              novaOperacao.observacoa, novaOperacao.tipoOperacao, dataOperacao,
+              novaOperacao.observacao, novaOperacao.tipoOperacao, dataOperacao,
               novaOperacao.dataEntrada, novaOperacao.dataSaida,
               novaOperacao.dataPreviaChegada);
       encontrado = 1;
     } else {
       fprintf(temp, "%d;%d;%d;%d;%d;%d;%f;%s;%d;%s;%s;%s;%s;\n", numDoc,
               numDocExterno, idFunc, idEmpresa, idPosto, idComponente, montante,
-              observacoa, tipoOperacao, dataOperacao, dataEntrada, dataSaida,
+              observacao, tipoOperacao, dataOperacao, dataEntrada, dataSaida,
               dataPreviaChegada);
     }
   }

@@ -6,5 +6,7 @@ int fornecedorAlreadyExists(int idForncedor);
 int fabricanteAlreadyExists(int idFabricante);
 int funcionarioAlreadyExists(int idFunc);
 int operacaoAlreadyExists(int idOpera);
+int empresaAlreadyExists(int idEmpresa);
+int componenteAlreadyExists(int idComponente);
 
 #endif

@@ -33,7 +33,7 @@ typedef struct {
   int idPostoTrabalho;
   int numSerie;
   int garantia;
-  char dataAquisicao[20];
+  char dataAquisicao[MAX_STR];
   char tipo[MAX_STR];
   char designacao[MAX_STR];
   char condicao[MAX_STR]; // Novo, Utilizado
@@ -50,14 +50,14 @@ typedef struct {
   int idPosto;
   int idComponente;
   int idEmpresa;
-  int tipoOperacao;
-  char dataSaida[10];
-  char dataEntrada[10];
-  char dataPreviaChegada[10];
+  char tipoOperacao[MAX_STR];
+  char dataSaida[MAX_STR];
+  char dataEntrada[MAX_STR];
+  char dataPreviaChegada[MAX_STR];
   int idFunc;
-  char dataOperacao[10];
+  char dataOperacao[MAX_STR];
   float montante;
-  char observacoa[MAX_STR];
+  char observacao[MAX_STR];
 } Operacao;
 
 /* incluindo o número do documento interno, número do documento
