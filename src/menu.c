@@ -1,5 +1,6 @@
 #include "include/menu.h"
 #include <stdio.h>
+#include<stdlib.h>
 
 void menuComponentes() {
   int opcao;
@@ -56,7 +57,7 @@ void menuFuncionarios() {
     printf("0. Voltar ao Menu Principal\n");
     printf("Escolha uma opção: ");
     scanf("%d", &opcao);
-
+    
     switch (opcao) {
     case 1:
       InserirFuncionario();

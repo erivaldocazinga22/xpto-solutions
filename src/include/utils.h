@@ -8,5 +8,6 @@ int funcionarioAlreadyExists(int idFunc);
 int operacaoAlreadyExists(int idOpera);
 int empresaAlreadyExists(int idEmpresa);
 int componenteAlreadyExists(int idComponente);
+void clear_screen();
 
 #endif

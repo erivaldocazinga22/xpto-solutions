@@ -1,5 +1,6 @@
 #include "include/utils.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 int postoAlreadyExists(int idPosto) {
   FILE *arq = fopen("posto-de-trabalho.txt", "r");
@@ -166,3 +167,12 @@ int componenteAlreadyExists(int idComponente) {
   fclose(arq);
   return encontrado;
 };
+
+void clear_screen() {
+#ifdef _WIN32
+    system("cls");
+#else
+    printf("\033[2J\033[H");
+    fflush(stdout);
+#endif
+}

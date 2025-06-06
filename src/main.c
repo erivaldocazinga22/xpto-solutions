@@ -1,4 +1,5 @@
 #include "include/menu.h"
+#include"include/utils.h"
 #include <stdio.h>
 
 int main() {
@@ -11,6 +12,7 @@ int main() {
   int opcao;
 
   do {
+    clear_screen();
     printf("\n=== Sistema de Gestão de Equipamentos - XPTO Solutions ===\n");
     printf("1. Gerir Componentes\n");
     printf("2. Gerir Postos de Trabalho\n");
