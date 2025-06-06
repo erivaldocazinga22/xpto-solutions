@@ -126,8 +126,8 @@ void InserirOperacao() {
   struct tm dataHora = *localtime(&agora);
 
   snprintf(novaOperacao.dataOperacao, sizeof(novaOperacao.dataOperacao),
-           "%02d/%02d/%04d", dataHora.tm_mday, dataHora.tm_mon + 1,
-           dataHora.tm_year + 1900);
+           "%04d-%02d-%02d", dataHora.tm_year + 1900, dataHora.tm_mon + 1,
+           dataHora.tm_mday);
 
   dataHora.tm_mday += qDiasDataPrev;
   mktime(&dataHora); // normaliza a data
@@ -143,7 +143,7 @@ void InserirOperacao() {
 }
 
 void ListarOperacoes() {
-  FILE *arq = fopen("operacoes.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
@@ -201,7 +201,7 @@ void ListarOperacoes() {
 void ApagarOperacao() {
   printf("\n============ APAGAR OPERACAO =============\n");
   int optionId;
-  printf("Digite o id da operacao: ");
+  printf("Digite o nº do documento da operacao: ");
   scanf("%d", &optionId);
 
   FILE *arq = fopen("operacoes.txt", "r");
@@ -230,7 +230,7 @@ void ApagarOperacao() {
                 &idComponente, &montante, observacao, tipoOperacao,
                 dataOperacao, dataEntrada, dataSaida,
                 dataPreviaChegada) == 13) {
-    if (numDoc != optionId) {
+    if (numDoc != optionId || numDocExterno != optionId) {
       fprintf(temp, "%d;%d;%d;%d;%d;%d;%f;%s;%s;%s;%s;%s;%s;\n", numDoc,
               numDocExterno, idFunc, idEmpresa, idPosto, idComponente, montante,
               observacao, tipoOperacao, dataOperacao, dataEntrada, dataSaida,

@@ -41,7 +41,7 @@ num_doc_externo
 id_posto_trabalho
 id_component
 id_empresa
-tipo_operacao
+tipo_operacao # 
 data_saida
 data_chegada
 data_prevista_chegada

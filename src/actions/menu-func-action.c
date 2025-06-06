@@ -124,7 +124,7 @@ void ApagarFuncionario() {
 
   if (!encontrado) {
     remove("temp.txt");
-    printf("Funcionário com ID %d não encontrado.\n", optionId);
+    printf("Funcionário com ID %d não encontrado.\n", id);
     return;
   }
 

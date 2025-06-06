@@ -93,16 +93,7 @@ void InserirComponente() {
   getchar();
 
   // Obter data actual e guardar como string no campo dataAquisicao
-  time_t agora;
-  struct tm *dataHora;
-
-  time(&agora);                 // Obtém o tempo actual
-  dataHora = localtime(&agora); // Converte para struct tm local
-
-  // Formatar a data como string no formato DD/MM/AAAA
-  snprintf(novoComponente.dataAquisicao, sizeof(novoComponente.dataAquisicao),
-           "%02d/%02d/%d", dataHora->tm_mday, dataHora->tm_mon + 1,
-           dataHora->tm_year + 1900);
+  obterDataActual(novoComponente.dataAquisicao, sizeof(novoComponente.dataAquisicao));
 
   int error = 0;
   do {

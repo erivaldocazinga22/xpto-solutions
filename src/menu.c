@@ -208,27 +208,19 @@ void menuConsultas() {
     printf("1. Componentes com data prevista ultrapassada\n");
     printf("2. Componentes por Posto de Trabalho\n");
     printf("3. Consultar Operações por Documento\n");
-    printf("4. Pesquisar Empresas\n");
-    printf("5. Pesquisar Componentes\n");
     printf("0. Voltar ao Menu Principal\n");
     printf("Escolha uma opção: ");
     scanf("%d", &opcao);
 
     switch (opcao) {
     case 1:
-      printf("Listar Componentes Atrasados\n");
+      listarComponentesAtrasados();
       break;
     case 2:
-      printf("Listar Componentes por Posto\n");
+      listarComponentesPorPosto();
       break;
     case 3:
-      printf("Consultar Operações por Documento\n");
-      break;
-    case 4:
-      printf("Pesquisar Empresas\n");
-      break;
-    case 5:
-      printf("Pesquisar Componentes\n");
+      consultarOperacaoPorDoc();
       break;
     case 0:
       printf("A voltar ao Menu Principal...\n");

@@ -8,6 +8,7 @@ int funcionarioAlreadyExists(int idFunc);
 int operacaoAlreadyExists(int idOpera);
 int empresaAlreadyExists(int idEmpresa);
 int componenteAlreadyExists(int idComponente);
-void clear_screen();
 
+void clear_screen();
+void obterDataActual(char *buffer, int tamanho);
 #endif

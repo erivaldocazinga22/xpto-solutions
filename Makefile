@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -Iinclude -Wall -std=c99
 
 # Lista de arquivos fonte
-SRC = src/main.c src/utils.c src/menu.c src/actions/menu-func-action.c src/actions/menu-empresa-action.c src/actions/menu-comp-action.c  src/actions/menu-posto-action.c src/actions/menu-opera-action.c
+SRC = src/main.c src/utils.c src/menu.c src/actions/menu-func-action.c src/actions/menu-empresa-action.c src/actions/menu-comp-action.c  src/actions/menu-posto-action.c src/actions/menu-opera-action.c src/actions/advanced-consults-action.c
 
 # Nome do executável
 OUT = programa

@@ -1,6 +1,7 @@
 #include "include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 int postoAlreadyExists(int idPosto) {
   FILE *arq = fopen("posto-de-trabalho.txt", "r");
@@ -169,10 +170,18 @@ int componenteAlreadyExists(int idComponente) {
 };
 
 void clear_screen() {
-#ifdef _WIN32
-    system("cls");
-#else
-    printf("\033[2J\033[H");
-    fflush(stdout);
-#endif
+  #ifdef _WIN32
+      system("cls");
+  #else
+      printf("\033[2J\033[H");
+      fflush(stdout);
+  #endif
+}
+
+void obterDataActual(char *buffer, int tamanho) {
+    time_t agora = time(NULL);
+    struct tm *data_hora = localtime(&agora);
+
+    // Formata a data como string e guarda no buffer
+    strftime(buffer, tamanho, "%Y-%m-%d", data_hora);
 }

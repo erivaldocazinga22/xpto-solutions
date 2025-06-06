@@ -44,5 +44,8 @@ void PesquisarOperacao();
 
 void menuConsultas();
 /* Funcoes da Opecoes */
+void listarComponentesAtrasados();
+void listarComponentesPorPosto();
+void consultarOperacaoPorDoc();
 
 #endif
