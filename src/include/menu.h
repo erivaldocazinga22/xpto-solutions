@@ -25,6 +25,7 @@ void ApagarComponente();
 void AlterarComponente();
 void PesquisarComponentes();
 void TrocaDePostoDeTrabalho();
+void associarComponentes();
 
 void menuPostosTrabalho();
 /* Funcoes da empresa */

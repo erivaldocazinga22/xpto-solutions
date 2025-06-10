@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FILE_NAME "posto-de-trabalho.txt"
+#define FILE_NAME "./data/posto-de-trabalho.txt"
+#define FILE_NAME_TEMP "./data/temp.txt"
 
 int obterProximoPostoId() {
   FILE *arq = fopen(FILE_NAME, "r");
@@ -26,6 +27,9 @@ int obterProximoPostoId() {
 }
 
 void salvarPosto(PostoTrabalho novoPosto) {
+  // Verificar se a pasta "data" existe, se não deve criar
+  folderDataAlreadyExists();
+
   FILE *arq = fopen(FILE_NAME, "a");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
@@ -114,7 +118,7 @@ void AlterarPostoTrabalho() {
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (temp == NULL) {
     printf("Erro ao criar o ficheiro temporário.\n");
     fclose(arq);
@@ -209,10 +213,10 @@ void AlterarPostoTrabalho() {
 
   if (encontrado) {
     remove(FILE_NAME);
-    rename("temp.txt", FILE_NAME);
+    rename(FILE_NAME_TEMP, FILE_NAME);
     printf("Posto de trabalho com ID %d alterado com sucesso.\n", optionId);
   } else {
-    remove("temp.txt");
+    remove(FILE_NAME_TEMP);
     printf("Posto de trabalho com ID %d não encontrado.\n", optionId);
   }
 }
@@ -223,13 +227,13 @@ void ApagarPostoTrabalho() {
   printf("Digite o ID do posto de trabalho: ");
   scanf("%d", &optionId);
 
-  FILE *arq = fopen("posto-de-trabalho.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (temp == NULL) {
     printf("Erro ao criar o ficheiro temporário.\n");
     fclose(arq);
@@ -254,11 +258,11 @@ void ApagarPostoTrabalho() {
   fclose(temp);
 
   if (encontrado) {
-    remove("posto-de-trabalho.txt");
-    rename("temp.txt", "posto-de-trabalho.txt");
+    remove(FILE_NAME);
+    rename(FILE_NAME_TEMP, FILE_NAME);
     printf("Posto de trabalho com ID %d apagado com sucesso.\n", optionId);
   } else {
-    remove("temp.txt");
+    remove(FILE_NAME_TEMP);
     printf("Posto de trabalho com ID %d não encontrado.\n", optionId);
   }
 }

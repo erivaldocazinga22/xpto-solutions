@@ -6,10 +6,10 @@
 #include <string.h>
 #include <time.h> // para lidar com a data de aquisição automatica
 
-#define FILE_NAME "componentes.txt"
+#define FILE_NAME "./data/componentes.txt"
+#define FILE_NAME_TEMP "./data/temp.txt"
 
 int obterProximoComponenteId() {
-
   FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL)
     return 1;
@@ -93,7 +93,8 @@ void InserirComponente() {
   getchar();
 
   // Obter data actual e guardar como string no campo dataAquisicao
-  obterDataActual(novoComponente.dataAquisicao, sizeof(novoComponente.dataAquisicao));
+  obterDataActual(novoComponente.dataAquisicao,
+                  sizeof(novoComponente.dataAquisicao));
 
   int error = 0;
   do {
@@ -180,7 +181,7 @@ void ApagarComponente() {
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (temp == NULL) {
     printf("Erro ao criar o ficheiro temporário.\n");
     fclose(arq);
@@ -211,11 +212,11 @@ void ApagarComponente() {
   fclose(temp);
 
   if (encontrado) {
-    remove(FILE_NAME);             // Apaga o antigo
-    rename("temp.txt", FILE_NAME); // Renomeia o novo
+    remove(FILE_NAME);                 // Apaga o antigo
+    rename(FILE_NAME_TEMP, FILE_NAME); // Renomeia o novo
     printf("Componente com ID %d apagado com sucesso.\n", optionId);
   } else {
-    remove("temp.txt"); // Não encontrado, apaga temp
+    remove(FILE_NAME_TEMP); // Não encontrado, apaga temp
     printf("Componente com ID %d não encontrado.\n", optionId);
   }
 }
@@ -239,7 +240,7 @@ void AlterarComponente() {
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (temp == NULL) {
     printf("Erro ao criar ficheiro temporário.\n");
     fclose(arq);
@@ -425,10 +426,10 @@ void AlterarComponente() {
 
   if (encontrado) {
     remove(FILE_NAME);
-    rename("temp.txt", FILE_NAME);
+    rename(FILE_NAME_TEMP, FILE_NAME);
     printf("Componente atualizado com sucesso.\n");
   } else {
-    remove("temp.txt");
+    remove(FILE_NAME_TEMP);
     printf("Componente com ID %d não encontrado.\n", optionId);
   }
 }
@@ -493,7 +494,7 @@ void TrocaDePostoDeTrabalho() {
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (temp == NULL) {
     printf("Erro ao criar ficheiro temporário.\n");
     fclose(arq);
@@ -564,10 +565,10 @@ void TrocaDePostoDeTrabalho() {
 
   if (encontrado) {
     remove(FILE_NAME);
-    rename("temp.txt", FILE_NAME);
+    rename(FILE_NAME_TEMP, FILE_NAME);
     printf("Componente atualizado com sucesso.\n");
   } else {
-    remove("temp.txt");
+    remove(FILE_NAME_TEMP);
     printf("Componente com ID %d não encontrado.\n", optionId);
   }
 }

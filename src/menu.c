@@ -1,6 +1,6 @@
 #include "include/menu.h"
 #include <stdio.h>
-#include<stdlib.h>
+#include <stdlib.h>
 
 void menuComponentes() {
   int opcao;
@@ -12,7 +12,8 @@ void menuComponentes() {
     printf("3. Apagar Componente\n");
     printf("4. Listar Componentes\n");
     printf("5. Troca de posto de trabalho - Componente\n");
-    printf("6. Pesquisar Componente\n");
+    printf("6. Gerenciar Sub-componentes\n");
+    printf("7. Pesquisar Componente\n");
     printf("0. Voltar ao Menu Principal\n");
     printf("Escolha uma opção: ");
     scanf("%d", &opcao);
@@ -34,6 +35,9 @@ void menuComponentes() {
       TrocaDePostoDeTrabalho();
       break;
     case 6:
+      associarComponentes();
+      break;
+    case 7:
       PesquisarComponentes();
       break;
     case 0:
@@ -57,7 +61,7 @@ void menuFuncionarios() {
     printf("0. Voltar ao Menu Principal\n");
     printf("Escolha uma opção: ");
     scanf("%d", &opcao);
-    
+
     switch (opcao) {
     case 1:
       InserirFuncionario();

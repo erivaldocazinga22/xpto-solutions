@@ -11,4 +11,10 @@ int componenteAlreadyExists(int idComponente);
 
 void clear_screen();
 void obterDataActual(char *buffer, int tamanho);
+
+void folderDataAlreadyExists();
+
+// utilitarios de pesquisa
+void strToLower(char *dest, const char *src);
+int matchWildcard(const char *pattern, const char *text);
 #endif

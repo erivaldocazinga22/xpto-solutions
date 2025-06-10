@@ -1,10 +1,20 @@
 #include "include/utils.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h> // Para mkdir
 #include <time.h>
+#include <unistd.h> // Para access()
+
+#define FILE_NAME_OPERATIONS "./data/operacoes.txt"
+#define FILE_NAME_COMPS "./data/componentes.txt"
+#define FILE_NAME_POSTO "./data/posto-de-trabalho.txt"
+#define FILE_NAME_EMPRESAS "./data/empresas.txt"
+#define FILE_NAME_FUNC "./data/funcionario.txt"
 
 int postoAlreadyExists(int idPosto) {
-  FILE *arq = fopen("posto-de-trabalho.txt", "r");
+  FILE *arq = fopen(FILE_NAME_POSTO, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return 0;
@@ -25,7 +35,7 @@ int postoAlreadyExists(int idPosto) {
 }
 
 int fabricanteAlreadyExists(int idFabricante) {
-  FILE *arq = fopen("empresas.txt", "r");
+  FILE *arq = fopen(FILE_NAME_EMPRESAS, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return 0;
@@ -46,7 +56,7 @@ int fabricanteAlreadyExists(int idFabricante) {
 }
 
 int fornecedorAlreadyExists(int idForncedor) {
-  FILE *arq = fopen("empresas.txt", "r");
+  FILE *arq = fopen(FILE_NAME_EMPRESAS, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return 0;
@@ -68,7 +78,7 @@ int fornecedorAlreadyExists(int idForncedor) {
 }
 
 int funcionarioAlreadyExists(int idFunc) {
-  FILE *arq = fopen("funcionario.txt", "r");
+  FILE *arq = fopen(FILE_NAME_FUNC, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return 0;
@@ -88,11 +98,11 @@ int funcionarioAlreadyExists(int idFunc) {
 };
 
 int operacaoAlreadyExists(int idOpera) {
-  FILE *arq = fopen("opercoes.txt", "r");
+  FILE *arq = fopen(FILE_NAME_OPERATIONS, "r");
 
   // Se não existe, cria o ficheiro vazio e retorna 0 (não existe)
   if (arq == NULL) {
-    arq = fopen("opercoes.txt", "w");
+    arq = fopen(FILE_NAME_OPERATIONS, "w");
     if (arq == NULL) {
       printf("Erro ao criar o ficheiro.\n");
       return 0;
@@ -124,7 +134,7 @@ int operacaoAlreadyExists(int idOpera) {
 }
 
 int empresaAlreadyExists(int idEmpresa) {
-  FILE *arq = fopen("empresas.txt", "r");
+  FILE *arq = fopen(FILE_NAME_EMPRESAS, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return 0;
@@ -145,7 +155,7 @@ int empresaAlreadyExists(int idEmpresa) {
 };
 
 int componenteAlreadyExists(int idComponente) {
-  FILE *arq = fopen("componentes.txt", "r");
+  FILE *arq = fopen(FILE_NAME_COMPS, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return 0;
@@ -170,18 +180,96 @@ int componenteAlreadyExists(int idComponente) {
 };
 
 void clear_screen() {
-  #ifdef _WIN32
-      system("cls");
-  #else
-      printf("\033[2J\033[H");
-      fflush(stdout);
-  #endif
+#ifdef _WIN32
+  system("cls");
+#else
+  printf("\033[2J\033[H");
+  fflush(stdout);
+#endif
 }
 
 void obterDataActual(char *buffer, int tamanho) {
-    time_t agora = time(NULL);
-    struct tm *data_hora = localtime(&agora);
+  time_t agora = time(NULL);
+  struct tm *data_hora = localtime(&agora);
 
-    // Formata a data como string e guarda no buffer
-    strftime(buffer, tamanho, "%Y-%m-%d", data_hora);
+  // Formata a data como string e guarda no buffer
+  strftime(buffer, tamanho, "%Y-%m-%d", data_hora);
+}
+
+void folderDataAlreadyExists() {
+  if (access("./data", F_OK) != 0) {
+    // Cria a pasta se não existir
+    if (mkdir("./data", 0755) != 0) {
+      printf("Erro ao criar a pasta 'data'.\n");
+      return;
+    }
+  }
+}
+
+// Utilistarios de  pesqusisa
+
+/* Função que converte para minusculo - garantido a compatibilidade com
+ * caracteres especiais
+ *
+ * @params while (*src) para percorrer a string até o terminador nulo.
+ * tolower((unsigned char)*src) garante comportamento correto para caracteres
+ * acentuados ou especiais.
+ */
+
+void strToLower(char *dest, const char *src) {
+  int i = 0;
+  while (src[i]) {
+    dest[i] = tolower((unsigned char)src[i]);
+    i++;
+  }
+  dest[i] = '\0';
+}
+
+int matchWildcard(const char *pattern, const char *text) {
+  size_t pLen = strlen(pattern);
+  size_t tLen = strlen(text);
+
+  // Se o padrão contém '*'
+  if (strchr(pattern, '*')) {
+    const char *star = strchr(pattern, '*');
+    int starIndex = star - pattern;
+
+    if (pLen == 1)
+      return 1; // só tem '*', então tudo combina
+
+    if (starIndex == 0) {
+      // Começa com '*': *abc
+      const char *sub = pattern + 1;
+      return strstr(text, sub) != NULL;
+    } else if (starIndex == pLen - 1) {
+      // Termina com '*': abc*
+      return strncmp(text, pattern, pLen - 1) == 0;
+    } else {
+      // No meio: ab*cd
+      char prefix[128], suffix[128];
+      strncpy(prefix, pattern, starIndex);
+      prefix[starIndex] = '\0';
+      strcpy(suffix, pattern + starIndex + 1);
+
+      return strncmp(text, prefix, strlen(prefix)) == 0 &&
+             strstr(text + strlen(prefix), suffix) != NULL;
+    }
+  }
+
+  // Se o padrão contém '?'
+  if (strchr(pattern, '?')) {
+    if (tLen != pLen)
+      return 0;
+
+    for (size_t i = 0; i < pLen; i++) {
+      if (pattern[i] == '?')
+        continue;
+      if (pattern[i] != text[i])
+        return 0;
+    }
+    return 1;
+  }
+
+  // Comparação exata se não houver '*' ou '?'
+  return strcmp(pattern, text) == 0;
 }

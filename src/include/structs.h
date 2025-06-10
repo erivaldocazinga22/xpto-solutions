@@ -40,6 +40,11 @@ typedef struct {
   char observacao[255];
 } Componente;
 
+typedef struct {
+  int idComponente;
+  int idSubComponente;
+} ComponenteSubcomponente;
+
 /* identificação, designação, número de série, data de
 aquisição, garantia, identificação do fornecedor, identificação do fabricante,
 tipo, condição(Novo, Utilizado), identificação do posto de trabalho e

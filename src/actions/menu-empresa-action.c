@@ -1,10 +1,12 @@
 #include "../include/structs.h"
+#include "../include/utils.h"
 #include <ctype.h> // Para poder usar a funcao de verificacao se é um digito <isdigit()>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define FILE_NAME "empresas.txt"
+#define FILE_NAME "./data/empresas.txt"
+#define FILE_NAME_TEMP "./data/temp.txt"
 
 int obterProximoEmpresaId() {
   FILE *arq = fopen(FILE_NAME, "r");
@@ -28,6 +30,9 @@ int obterProximoEmpresaId() {
 }
 
 void salvarEmpresa(Empresa novaEmpresa) {
+  // verificar se a pasta 'data' exists, se não cria
+  folderDataAlreadyExists();
+
   FILE *arq = fopen(FILE_NAME, "a");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
@@ -144,7 +149,8 @@ void ApagarEmpresa() {
   printf("Digite o ID da empresa: ");
   if (scanf("%d", &optionId) != 1) {
     printf("Entrada inválida. ID deve ser numérico.\n");
-    while (getchar() != '\n');
+    while (getchar() != '\n')
+      ;
     return;
   }
 
@@ -154,7 +160,7 @@ void ApagarEmpresa() {
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (!temp) {
     fclose(arq);
     printf("Erro ao criar ficheiro temporário.\n");
@@ -164,7 +170,8 @@ void ApagarEmpresa() {
   int id, encontrado = 0;
   char nome[100], tipo[100], contacto[200];
 
-  while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, tipo, contacto) == 4) {
+  while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, tipo,
+                contacto) == 4) {
     if (id != optionId) {
       fprintf(temp, "%d;%s;%s;%s\n", id, nome, tipo, contacto);
     } else {
@@ -176,13 +183,13 @@ void ApagarEmpresa() {
   fclose(temp);
 
   if (!encontrado) {
-    remove("temp.txt");
+    remove(FILE_NAME_TEMP);
     printf("Empresa com ID %d não encontrada.\n", optionId);
     return;
   }
 
   remove(FILE_NAME);
-  rename("temp.txt", FILE_NAME);
+  rename(FILE_NAME_TEMP, FILE_NAME);
   printf("Empresa com ID %d apagada com sucesso.\n", optionId);
 
   // Remover operações
@@ -191,9 +198,11 @@ void ApagarEmpresa() {
   if (operacoes && tempOperacoes) {
     int idOperacao, idFuncionario, idEmpresa;
     char tipoOperacao[100], descricao[200];
-    while (fscanf(operacoes, "%d;%d;%d;%99[^;];%199[^\n]\n", &idOperacao, &idFuncionario, &idEmpresa, tipoOperacao, descricao) == 5) {
+    while (fscanf(operacoes, "%d;%d;%d;%99[^;];%199[^\n]\n", &idOperacao,
+                  &idFuncionario, &idEmpresa, tipoOperacao, descricao) == 5) {
       if (idEmpresa != optionId) {
-        fprintf(tempOperacoes, "%d;%d;%d;%s;%s\n", idOperacao, idFuncionario, idEmpresa, tipoOperacao, descricao);
+        fprintf(tempOperacoes, "%d;%d;%d;%s;%s\n", idOperacao, idFuncionario,
+                idEmpresa, tipoOperacao, descricao);
       }
     }
     fclose(operacoes);
@@ -202,8 +211,10 @@ void ApagarEmpresa() {
     rename("temp_operacoes.txt", "operacoes.txt");
     printf("Operações associadas à empresa foram removidas.\n");
   } else {
-    if (operacoes) fclose(operacoes);
-    if (tempOperacoes) fclose(tempOperacoes);
+    if (operacoes)
+      fclose(operacoes);
+    if (tempOperacoes)
+      fclose(tempOperacoes);
   }
 
   // Remover componentes
@@ -213,12 +224,12 @@ void ApagarEmpresa() {
     int idComp, idFornecedor, idFabricante, idPostoTrabalho;
     char tipo[100], designacao[100], condicao[100], observacao[255];
     while (fscanf(components, "%d;%d;%d;%d;%99[^;];%99[^;];%99[^;];%254[^\n]\n",
-                  &idComp, &idFornecedor, &idFabricante, &idPostoTrabalho,
-                  tipo, designacao, condicao, observacao) == 8) {
+                  &idComp, &idFornecedor, &idFabricante, &idPostoTrabalho, tipo,
+                  designacao, condicao, observacao) == 8) {
       if (idFornecedor != optionId && idFabricante != optionId) {
-        fprintf(tempComponents, "%d;%d;%d;%d;%s;%s;%s;%s\n",
-                idComp, idFornecedor, idFabricante, idPostoTrabalho,
-                tipo, designacao, condicao, observacao);
+        fprintf(tempComponents, "%d;%d;%d;%d;%s;%s;%s;%s\n", idComp,
+                idFornecedor, idFabricante, idPostoTrabalho, tipo, designacao,
+                condicao, observacao);
       }
     }
     fclose(components);
@@ -227,8 +238,10 @@ void ApagarEmpresa() {
     rename("temp_componentes.txt", "componentes.txt");
     printf("Componentes associados à empresa foram removidos.\n");
   } else {
-    if (components) fclose(components);
-    if (tempComponents) fclose(tempComponents);
+    if (components)
+      fclose(components);
+    if (tempComponents)
+      fclose(tempComponents);
   }
 
   // Remover postos de trabalho
@@ -237,11 +250,11 @@ void ApagarEmpresa() {
   if (postos && tempPostos) {
     int idPosto, idFunc;
     char nome[100], local[100], seccao[100], descricao[200];
-    while (fscanf(postos, "%d;%d;%99[^;];%99[^;];%99[^;];%199[^\n]\n",
-                  &idPosto, &idFunc, nome, local, seccao, descricao) == 6) {
+    while (fscanf(postos, "%d;%d;%99[^;];%99[^;];%99[^;];%199[^\n]\n", &idPosto,
+                  &idFunc, nome, local, seccao, descricao) == 6) {
       if (idFunc != optionId) {
-        fprintf(tempPostos, "%d;%d;%s;%s;%s;%s\n",
-                idPosto, idFunc, nome, local, seccao, descricao);
+        fprintf(tempPostos, "%d;%d;%s;%s;%s;%s\n", idPosto, idFunc, nome, local,
+                seccao, descricao);
       }
     }
     fclose(postos);
@@ -250,8 +263,10 @@ void ApagarEmpresa() {
     rename("temp_posto-de-trabalho.txt", "posto-de-trabalho.txt");
     printf("Postos de trabalho associados à empresa foram removidos.\n");
   } else {
-    if (postos) fclose(postos);
-    if (tempPostos) fclose(tempPostos);
+    if (postos)
+      fclose(postos);
+    if (tempPostos)
+      fclose(tempPostos);
   }
 
   printf("Remoção concluída.\n");
@@ -270,7 +285,7 @@ void AlterarEmpresa() {
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (temp == NULL) {
     printf("Erro ao criar ficheiro temporário.\n");
     fclose(arq);
@@ -380,10 +395,10 @@ void AlterarEmpresa() {
 
   if (encontrado) {
     remove(FILE_NAME);
-    rename("temp.txt", FILE_NAME);
+    rename(FILE_NAME_TEMP, FILE_NAME);
     printf("Empresa com ID %d alterada com sucesso.\n", optionId);
   } else {
-    remove("temp.txt");
+    remove(FILE_NAME_TEMP);
     printf("Empresa com ID %d não encontrada.\n", optionId);
   }
 }

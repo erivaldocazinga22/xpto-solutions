@@ -1,13 +1,22 @@
 #include "../include/structs.h"
+#include "../include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define FILE_NAME "./data/funcionario.txt"
+#define FILE_NAME_TEMP "./data/temp.txt"
+#define FILE_NAME_POSTO "./data/posto-de-trabalho.txt"
+#define FILE_NAME_TEMP_POSTO "./data/temp_postos.txt"
+#define FILE_NAME_OPERACAO "./data/operacoes.txt"
+#define FILE_NAME_TEMP_OPERACAO "./data/temp_operacoes.txt"
+
 /*
  * int obterProximoFuncId() - Função que verifica o ultimo id e incrementa
  *
  */
 int obterProximoFuncId() {
-  FILE *arq = fopen("funcionario.txt", "r"); // Ler o arquivo
+  FILE *arq = fopen(FILE_NAME, "r"); // Ler o arquivo
   if (arq == NULL)
     return 1;
 
@@ -25,8 +34,17 @@ int obterProximoFuncId() {
   return ultimoId + 1;
 }
 
+/*
+ * int salvarFuncionario(Funcionario novoFuncionario) - Função que precisiste os
+ * dados
+ *
+ */
+
 void salvarFuncionario(Funcionario novoFuncionario) {
-  FILE *arq = fopen("funcionario.txt", "a");
+  // Verifica se a pasta "data" existe
+  folderDataAlreadyExists();
+
+  FILE *arq = fopen(FILE_NAME, "a");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
@@ -61,7 +79,7 @@ void InserirFuncionario() {
 }
 
 void ListarFuncionarios() {
-  FILE *arq = fopen("funcionario.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (!arq) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
@@ -92,13 +110,13 @@ void ApagarFuncionario() {
   scanf("%d", &optionId);
 
   // Abrir o ficheiro original de funcionários
-  FILE *arq = fopen("funcionario.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro de funcionários.\n");
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (temp == NULL) {
     printf("Erro ao criar o ficheiro temporário.\n");
     fclose(arq);
@@ -123,19 +141,18 @@ void ApagarFuncionario() {
   fclose(temp);
 
   if (!encontrado) {
-    remove("temp.txt");
-    printf("Funcionário com ID %d não encontrado.\n", id);
+    remove(FILE_NAME_TEMP);
+    printf("Funcionário com ID %d não encontrado.\n", optionId);
     return;
   }
 
   // Substituir ficheiro original
-  remove("funcionario.txt");
-  rename("temp.txt", "funcionario.txt");
-  printf("Funcionário com ID %d apagado com sucesso.\n", optionId);
+  remove(FILE_NAME);
+  rename(FILE_NAME_TEMP, FILE_NAME);
 
   // === Remover de posto-de-trabalho.txt ===
-  FILE *postos = fopen("posto-de-trabalho.txt", "r");
-  FILE *tempPostos = fopen("temp_postos.txt", "w");
+  FILE *postos = fopen(FILE_NAME_POSTO, "r");
+  FILE *tempPostos = fopen(FILE_NAME_TEMP_POSTO, "w");
   if (postos && tempPostos) {
     int idPosto, idFuncionario;
     char cargo[100], local[100], area[100], descPosto[200];
@@ -149,8 +166,8 @@ void ApagarFuncionario() {
     }
     fclose(postos);
     fclose(tempPostos);
-    remove("posto-de-trabalho.txt");
-    rename("temp_postos.txt", "posto-de-trabalho.txt");
+    remove(FILE_NAME_POSTO);
+    rename(FILE_NAME_TEMP_POSTO, FILE_NAME_POSTO);
   } else {
     if (postos)
       fclose(postos);
@@ -159,8 +176,8 @@ void ApagarFuncionario() {
   }
 
   // === Remover de operacoes.txt ===
-  FILE *operacoes = fopen("operacoes.txt", "r");
-  FILE *tempOperacoes = fopen("temp_operacoes.txt", "w");
+  FILE *operacoes = fopen(FILE_NAME_OPERACAO, "r");
+  FILE *tempOperacoes = fopen(FILE_NAME_TEMP_OPERACAO, "w");
 
   int operacao_encontrada =
       0; // varialvel para controlar se existe opecao com o id do funcionario
@@ -178,8 +195,8 @@ void ApagarFuncionario() {
     }
     fclose(operacoes);
     fclose(tempOperacoes);
-    remove("operacoes.txt");
-    rename("temp_operacoes.txt", "operacoes.txt");
+    remove(FILE_NAME_OPERACAO);
+    rename(FILE_NAME_TEMP_OPERACAO, FILE_NAME_OPERACAO);
     operacao_encontrada = 1;
   } else {
     if (operacoes)
@@ -188,12 +205,11 @@ void ApagarFuncionario() {
       fclose(tempOperacoes);
   }
 
+  printf("Funcionário com ID %d apagado com sucesso.\n", optionId);
   if (operacao_encontrada) {
-    printf("Referências ao funcionário foram removidas dos ficheiros "
+    printf("[INFO]: Referências ao funcionário foram removidas dos ficheiros "
            "relacionados.\n");
   }
-
-  printf("%s, funcionario com ID = %d foi deletado com sucesso.", nome, id);
 }
 
 void AlterarFuncionario() {
@@ -203,13 +219,13 @@ void AlterarFuncionario() {
   scanf("%d", &optionId);
   getchar(); // limpar \n do buffer
 
-  FILE *arq = fopen("funcionario.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (temp == NULL) {
     printf("Erro ao criar ficheiro temporário.\n");
     fclose(arq);
@@ -291,26 +307,33 @@ void AlterarFuncionario() {
   fclose(temp);
 
   if (encontrado) {
-    remove("funcionario.txt");
-    rename("temp.txt", "funcionario.txt");
+    remove(FILE_NAME);
+    rename(FILE_NAME_TEMP, FILE_NAME);
     printf("Funcionário com ID %d alterado com sucesso.\n", optionId);
   } else {
-    remove("temp.txt");
+    remove(FILE_NAME_TEMP);
     printf("Funcionário com ID %d não encontrado.\n", optionId);
   }
 }
 
+/* Formas de uso dos wildcards
+ * "Jo*" — encontra “João”, “Josefa”, “Jorge”
+ * "???a" — encontra nomes com 4 letras terminando em "a"
+ * "*tecnico*" — encontra qualquer campo com a palavra "tecnico"
+ *
+ */
 void PesquisarFuncionario() {
   printf("\n============ PESQUISAR FUNCIONÁRIO =============\n");
   printf("1. Pesquisar por ID\n");
-  printf("2. Pesquisa por nome (com * e ?)\n");
+  printf("2. Pesquisar por Nome (com * e ?)\n");
+  printf("3. Pesquisar por qualquer campo (Nome, Função ou Descrição)\n");
   printf("0. Voltar\n");
 
   int opcao;
   printf("\nEscolha uma opção: ");
   scanf("%d", &opcao);
 
-  FILE *arq = fopen("funcionario.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
@@ -320,6 +343,7 @@ void PesquisarFuncionario() {
     int optionId;
     printf("Digite o ID do funcionário: ");
     scanf("%d", &optionId);
+
     int id, encontrado = 0;
     char nome[100], funcao[100], descricao[200];
 
@@ -341,41 +365,36 @@ void PesquisarFuncionario() {
     }
   }
 
-  else if (opcao == 2) {
+  else if (opcao == 2 || opcao == 3) {
     char padrao[100];
-    printf("Digite o padrão de nome (use * e ?): ");
+    char padraoLower[100];
+    printf("Digite o padrão (use * e ?): ");
     scanf(" %[^\n]", padrao);
+    strToLower(padraoLower, padrao);
 
     int id, encontrados = 0;
     char nome[100], funcao[100], descricao[200];
+    char nomeLower[100], funcaoLower[100], descricaoLower[200];
 
     printf("\n--- Funcionários Encontrados ---\n");
     while (fscanf(arq, "%d;%99[^;];%99[^;];%199[^\n]\n", &id, nome, funcao,
                   descricao) == 4) {
-      const char *p = padrao;
-      const char *n = nome;
-      const char *star = NULL;
-      const char *backup = NULL;
 
-      // Lógica para verificar * e ? sem função externa
-      while (*n) {
-        if (*p == '*') {
-          star = p++;
-          backup = n;
-        } else if (*p == '?' || *p == *n) {
-          p++;
-          n++;
-        } else if (star) {
-          p = star + 1;
-          n = ++backup;
-        } else {
-          break;
-        }
+      strToLower(nomeLower, nome);
+      strToLower(funcaoLower, funcao);
+      strToLower(descricaoLower, descricao);
+
+      int corresponde = 0;
+
+      if (opcao == 2) {
+        corresponde = matchWildcard(padraoLower, nomeLower);
+      } else if (opcao == 3) {
+        corresponde = matchWildcard(padraoLower, nomeLower) ||
+                      matchWildcard(padraoLower, funcaoLower) ||
+                      matchWildcard(padraoLower, descricaoLower);
       }
-      while (*p == '*')
-        p++;
 
-      if (*p == '\0' && *n == '\0') {
+      if (corresponde) {
         printf("ID: %d\n", id);
         printf("Nome: %s\n", nome);
         printf("Função: %s\n", funcao);
@@ -385,7 +404,7 @@ void PesquisarFuncionario() {
     }
 
     if (!encontrados) {
-      printf("Nenhum funcionário com nome correspondente ao padrão.\n");
+      printf("Nenhum funcionário correspondente ao padrão.\n");
     }
   }
 

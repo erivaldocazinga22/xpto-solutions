@@ -6,10 +6,11 @@
 #include <string.h>
 #include <time.h> // para lidar com a data de aquisição automatica
 
-#define FILE_NAME "operacoes.txt"
+#define FILE_NAME "./data/operacoes.txt"
+#define FILE_NAME_TEMP "./data/temp.txt"
 
 int obterProximaOperaId() {
-  FILE *arq = fopen("operacoes.txt", "r"); // Corrigido nome do arquivo
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     return 1;
   }
@@ -30,7 +31,10 @@ int obterProximaOperaId() {
 }
 
 void salvarOperacao(Operacao novaOperacao) {
-  FILE *arq = fopen("operacoes.txt", "a");
+  // veridicar se a pasta "data" existe, se não cria
+  folderDataAlreadyExists();
+
+  FILE *arq = fopen(FILE_NAME, "a");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
@@ -148,15 +152,6 @@ void ListarOperacoes() {
     printf("Erro ao abrir o ficheiro.\n");
     return;
   }
-  /*
-    FILE *arqFunc = fopen("funcionario.txt", "r");
-    if (arq == NULL) {
-      printf("Erro ao abrir o ficheiro.\n");
-      return;
-    }
-
-    int id, funcEncontrou = 0;
-    char nome[100], funcao[100], descricao[200]; */
 
   printf("\n============ LISTA DE OPERACOES =============\n");
 
@@ -204,13 +199,13 @@ void ApagarOperacao() {
   printf("Digite o nº do documento da operacao: ");
   scanf("%d", &optionId);
 
-  FILE *arq = fopen("operacoes.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (temp == NULL) {
     printf("Erro ao criar o ficheiro temporário.\n");
     fclose(arq);
@@ -244,11 +239,11 @@ void ApagarOperacao() {
   fclose(temp);
 
   if (encontrado) {
-    remove("operacoes.txt");
-    rename("temp.txt", "operacoes.txt");
+    remove(FILE_NAME);
+    rename(FILE_NAME_TEMP, FILE_NAME);
     printf("Operação com ID %d apagada com sucesso.\n", optionId);
   } else {
-    remove("temp.txt");
+    remove(FILE_NAME_TEMP);
     printf("Operação com ID %d não encontrada.\n", optionId);
   }
 }
@@ -260,13 +255,13 @@ void AlterarOperacao() {
   scanf("%d", &optionId);
   getchar(); // limpar o \n que fica no buffer
 
-  FILE *arq = fopen("operacoes.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
+  FILE *temp = fopen(FILE_NAME_TEMP, "w");
   if (temp == NULL) {
     printf("Erro ao criar ficheiro temporário.\n");
     fclose(arq);
@@ -316,11 +311,11 @@ void AlterarOperacao() {
   fclose(temp);
 
   if (encontrado) {
-    remove("operacoes.txt");
-    rename("temp.txt", "operacoes.txt");
+    remove(FILE_NAME);
+    rename(FILE_NAME_TEMP, FILE_NAME);
     printf("Funcionário com ID %d alterado com sucesso.\n", optionId);
   } else {
-    remove("temp.txt");
+    remove(FILE_NAME_TEMP);
     printf("Funcionário com ID %d não encontrado.\n", optionId);
   }
 }
@@ -333,7 +328,7 @@ void PesquisarOperacao() {
   fgets(termo, sizeof(termo), stdin);
   strtok(termo, "\n"); // tirar o \n no final
 
-  FILE *arq = fopen("operacoes.txt", "r");
+  FILE *arq = fopen(FILE_NAME, "r");
   if (arq == NULL) {
     printf("Erro ao abrir o ficheiro.\n");
     return;
