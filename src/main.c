@@ -20,7 +20,7 @@ int main() {
     printf("4. Gerir Empresas\n");
     printf("5. Gerir Operações\n");
     printf("6. Consultas Especiais\n");
-    printf("7. Estatísticas\n");
+    /* printf("7. Estatísticas\n"); */
     printf("0. Sair\n");
     printf("Escolha uma opção: ");
     scanf("%d", &opcao);
@@ -44,9 +44,9 @@ int main() {
     case 6:
       menuConsultas();
       break;
-    case 7:
+    /* case 7:
       printf("Visualizar estatísticas\n");
-      break;
+      break; */
     case 0:
       printf("A terminar o programa...\n");
       break;
