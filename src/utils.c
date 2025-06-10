@@ -241,7 +241,7 @@ int matchWildcard(const char *pattern, const char *text) {
       // Começa com '*': *abc
       const char *sub = pattern + 1;
       return strstr(text, sub) != NULL;
-    } else if (starIndex == pLen - 1) {
+    } else if (starIndex == (int)pLen - 1) {
       // Termina com '*': abc*
       return strncmp(text, pattern, pLen - 1) == 0;
     } else {

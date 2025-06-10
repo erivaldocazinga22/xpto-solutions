@@ -174,7 +174,6 @@ void menuOperacoes() {
     printf("2. Alterar Operação\n");
     printf("3. Apagar Operação\n");
     printf("4. Listar Operações\n");
-    printf("5. Pesquisar Operação\n");
     printf("0. Voltar ao Menu Principal\n");
     printf("Escolha uma opção: ");
     scanf("%d", &opcao);
@@ -191,9 +190,6 @@ void menuOperacoes() {
       break;
     case 4:
       ListarOperacoes();
-      break;
-    case 5:
-      printf("Pesquisar Operação\n");
       break;
     case 0:
       printf("A voltar ao Menu Principal...\n");

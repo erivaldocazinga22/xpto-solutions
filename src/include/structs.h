@@ -55,19 +55,14 @@ typedef struct {
   int idPosto;
   int idComponente;
   int idEmpresa;
+  int idFunc;
+  float montante;
   char tipoOperacao[MAX_STR];
   char dataSaida[MAX_STR];
   char dataEntrada[MAX_STR];
   char dataPreviaChegada[MAX_STR];
-  int idFunc;
   char dataOperacao[MAX_STR];
-  float montante;
   char observacao[MAX_STR];
 } Operacao;
 
-/* incluindo o número do documento interno, número do documento
-externo, identificação do posto de trabalho, identificação do componente,
-identificação da empresa, tipo de operação, data de saída, data de chegada, data
-prevista de chegada, identificação do funcionário responsável, data da operação,
-montante, observações; */
 #endif

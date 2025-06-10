@@ -267,7 +267,7 @@ void ApagarPostoTrabalho() {
   }
 }
 
-void PesquisarPostoTrabalho() {
+/* void PesquisarPostoTrabalho() {
   printf("\n============ PESQUISAR POSTO DE TRABALHO =============\n");
   char termo[100];
   printf("Digite o nome, local ou parte da descrição para pesquisar: ");
@@ -303,4 +303,90 @@ void PesquisarPostoTrabalho() {
     printf("\nNenhum posto de trabalho encontrado com o termo \"%s\".\n",
            termo);
   }
+} */
+
+void PesquisarPostoTrabalho() {
+  printf("\n============ PESQUISAR POSTO DE TRABALHO =============\n");
+  printf("1. Pesquisar por ID\n");
+  printf("2. Pesquisar por Nome (com * e ?)\n");
+  printf("0. Voltar\n");
+
+  int opcao;
+  printf("\nEscolha uma opção: ");
+  scanf("%d", &opcao);
+
+  FILE *arq = fopen(FILE_NAME, "r");
+  if (arq == NULL) {
+    printf("Erro ao abrir o ficheiro.\n");
+    return;
+  }
+
+  if (opcao == 1) {
+    int optionId;
+    printf("Digite o ID do posto de trabalho: ");
+    scanf("%d", &optionId);
+
+    int id, idFunc;
+    char nome[100], local[100], seccao[100], descricao[100];
+    int encontrado = 0;
+    while (fscanf(arq, "%d;%d;%99[^;];%99[^;];%99[^;];%99[^\n]\n", &id, &idFunc,
+                  nome, local, seccao, descricao) == 6) {
+      printf("\nID: %d\nID Posto: %d\nNome: %s\nLocal: %s\nSeccao: "
+             "%s\nDescrição: %s\n",
+             id, idFunc, nome, local, seccao, descricao);
+      encontrado = 1;
+    }
+
+    if (!encontrado) {
+      printf("Posto com ID %d não encontrado.\n", optionId);
+    }
+  }
+
+  else if (opcao == 2) {
+    char padrao[100];
+    char padraoLower[100];
+    printf("Digite o padrão (use * e ?): ");
+    scanf(" %[^\n]", padrao);
+    strToLower(padraoLower, padrao);
+
+    int id, idFunc, encontrados = 0;
+    char nome[100], local[100], seccao[100], descricao[100];
+    char nomeLower[100];
+
+    printf("\n--- Postos de Trabalho Encontrados ---\n");
+    while (fscanf(arq, "%d;%d;%99[^;];%99[^;];%99[^;];%99[^\n]\n", &id, &idFunc,
+                  nome, local, seccao, descricao) == 6) {
+
+      strToLower(nomeLower, nome);
+
+      int corresponde = 0;
+
+      if (opcao == 2) {
+        corresponde = matchWildcard(padraoLower, nomeLower);
+      } else if (opcao == 3) {
+        corresponde = matchWildcard(padraoLower, nomeLower);
+      }
+
+      if (corresponde) {
+        printf("\nID: %d\nID Funcionário: %d\nNome: %s\nLocal: %s\nSeccao: "
+               "%s\nDescrição: %s\n",
+               id, idFunc, nome, local, seccao, descricao);
+        encontrados++;
+      }
+    }
+
+    if (!encontrados) {
+      printf("Nenhum posto de trabalho correspondente ao padrão.\n");
+    }
+  }
+
+  else if (opcao == 0) {
+    printf("A voltar ao Menu Principal...\n");
+  }
+
+  else {
+    printf("Opção inválida! Tente novamente.\n");
+  }
+
+  fclose(arq);
 }
